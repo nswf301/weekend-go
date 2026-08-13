@@ -46,7 +46,7 @@ function pick(row, ...names) {
 const unent = (s) => String(s || "")
   .replace(/&middot;/g, "·").replace(/&amp;/g, "&")
   .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-  .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+  .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#039;/g, "'")
   .replace(/&nbsp;/g, " ");
 
 const toDate = (s) => {
@@ -759,23 +759,133 @@ function forestUrl(title) {
   return id ? `https://www.foresttrip.go.kr/indvz/main.do?hmpgId=${id}` : "";
 }
 
+/* ── 5. 경기도 시군 예약 — 남양주시 체험·견학 ──────────────────
+ * 서울 예약(collectSeoul)과 같은 스키마로 맞춘다. API가 아니라 서버가 그려주는
+ * 표(HTML)를 읽는다. 로그인은 필요 없고 UTF-8이다.
+ *
+ * 목록:  selectUserExprnTourBasicInfoList.do?key=3383&pageUnit=100&pageIndex=<쪽>
+ * 상세:  selectUserExprnTourBasicInfoView.do?key=3383&searchTourKey=..&searchExprnKey=..
+ *
+ * 접수상태가 `접수중`인 것만 남긴다. 서울 예약이 `접수중·안내중`만 받는 것과
+ * 같은 기준이다 (전체 104건 중 대부분이 이미 접수마감이다).
+ */
+
+const NYJ_BASE = "https://www.nyj.go.kr/reserve/";
+
+// 좌표는 페이지가 주지 않아서 기관별로 박아뒀다 (관광공사 API로 찾은 값).
+// 표에 없는 기관은 남양주시청 좌표를 쓴다 — `유아숲체험원`·`남양주 궁집`·
+// `REMEMBER 1910`은 관광공사에 등록이 없어 위치를 확인할 수 없었다.
+const NYJ_ORG_XY = {
+  "정약용유적지":     [37.5166, 127.2993],
+  "물맑음수목원":     [37.7058, 127.2956],
+  "남양주시립박물관": [37.5464, 127.2444],
+};
+const NYJ_CITY_XY = [37.6360, 127.2165];   // 남양주시청
+
+async function getText(url, label) {
+  const res = await fetch(url, { headers: { "User-Agent": "weekend-go/1.0" } });
+  if (!res.ok) throw new Error(`${label}: HTTP ${res.status}`);
+  return await res.text();
+}
+
+// 태그를 걷어내고 실체참조를 되돌린 뒤 공백을 한 칸으로 줄인다
+const stripTags = (s) => unent(String(s || "").replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
+
+// 상세 페이지는 <th>항목</th><td>값</td> 쌍으로 되어 있다
+function nyjField(html, label) {
+  const m = html.match(new RegExp(`<th[^>]*>\\s*${label}\\s*</th>\\s*<td[^>]*>([\\s\\S]*?)</td>`));
+  return m ? stripTags(m[1]) : "";
+}
+
+async function collectNamyangju() {
+  const out = [];
+
+  // 총 104건이라 pageUnit=100이면 두 쪽이면 끝난다. 넉넉히 4쪽까지 돌되
+  // 항목이 안 나오면 멈춘다.
+  for (let page = 1; page <= 4; page++) {
+    const html = await getText(
+      `${NYJ_BASE}selectUserExprnTourBasicInfoList.do?key=3383&pageUnit=100&pageIndex=${page}`,
+      `남양주 목록 ${page}쪽`
+    );
+    const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
+    let found = 0;
+
+    for (const row of rows) {
+      const tds = row.match(/<td[^>]*>[\s\S]*?<\/td>/g) || [];
+      if (tds.length < 7) continue;          // 머리글 줄(<th>)은 걸러진다
+      found++;
+
+      // 칸 순서: 0 번호 | 1 기관 | 2 카테고리 | 3 제목 | 4 접수기간 | 5 접수방법 | 6 접수상태
+      const status = stripTags(tds[6]);
+      if (status !== "접수중") continue;     // 접수마감·접수대기는 버린다
+
+      const org   = stripTags(tds[1]);
+      const cat   = stripTags(tds[2]);
+      const title = stripTags(tds[3]);
+      const term  = stripTags(tds[4]);
+
+      const href = (tds[3].match(/href="([^"]+)"/) || [])[1] || "";
+      const url  = href ? NYJ_BASE + unent(href).replace(/^\.\//, "") : "";
+
+      const [t1, t2] = term.split("~");
+      const rcptStart = toDate(t1 || "");
+      const rcptEnd   = toDate(t2 || "");
+
+      // 상세는 접수중인 것만 연다(10건 안팎이라 부담 없다).
+      // 못 받아도 목록 정보만으로 넣는다 — 수집 전체가 죽으면 안 된다.
+      let target = "", fee = "", place = "", tel = "", time = "";
+      if (url) {
+        try {
+          const d = await getText(url, `남양주 상세`);
+          target = nyjField(d, "모집대상");
+          fee    = nyjField(d, "이용요금");
+          place  = nyjField(d, "장소");
+          tel    = nyjField(d, "문의전화");
+          time   = nyjField(d, "소요시간");
+        } catch (e) {
+          console.warn(`  ! 남양주 상세 실패: ${title} (${e.message})`);
+        }
+      }
+
+      const age = ageRange(target);
+      const [lat, lng] = NYJ_ORG_XY[org] || NYJ_CITY_XY;
+
+      out.push({
+        kind: "reserve",
+        group: "체험·견학",
+        sub: cat,
+        title,
+        // 지역 이름은 다른 자료와 같은 꼴이라야 화면의 지역 필터가 맞는다
+        area: "경기 남양주시",
+        place: place || org,
+        target,                                // 원문 그대로
+        ageMin: age ? age[0] : null,
+        ageMax: age ? age[1] : null,
+        fee,
+        status,
+        time,
+        rcptStart,
+        rcptEnd,
+        url,
+        tel,
+        lat, lng,
+      });
+    }
+
+    if (!found) break;
+  }
+
+  console.log(`  남양주 접수중 ${out.length}건`);
+  return out;
+}
+
 /* ── 직접 확인이 필요한 곳 (자동 수집이 안 되는 예약처) ────── */
 
-const MANUAL = [
-  {
-    kind: "manual",
-    group: "직접 확인",
-    title: "남양주시 체험·견학 프로그램 예약",
-    // 지역 이름은 다른 자료와 같은 꼴이라야 한다. "남양주시"처럼 적으면
-    // 공백이 없어 화면의 지역 필터가 서울로 분류해버린다.
-    area: "경기 남양주시",
-    note: "물맑음수목원 등. 목록은 로그인 없이 볼 수 있고, 신청할 때만 로그인한다",
-    // 예전에는 selectExprnMyTourListU.do(내 예약 조회)를 걸어둬서 로그인해야 보였다.
-    // 아래가 프로그램 목록 페이지다.
-    url: "https://www.nyj.go.kr/reserve/selectUserExprnTourBasicInfoList.do?key=3383",
-    lat: 37.636, lng: 127.216,
-  },
-];
+// 지금은 비어 있다. 하나뿐이던 남양주시 체험·견학 링크는 collectNamyangju()가
+// 실제 프로그램을 받아오게 되면서 뺐다. 화면은 항목이 없는 섹션을 건너뛰므로
+// "직접 확인" 칸은 그냥 안 보인다. 앞으로 자동 수집이 안 되는 예약처를
+// 발견하면 여기에 넣는다.
+const MANUAL = [];
 
 /* ── 실행 ────────────────────────────────────────────────── */
 
@@ -786,6 +896,7 @@ const MANUAL = [
   const std   = await collectStandard().catch((e) => { console.error("표준데이터 실패:", e.message); return []; });
   const tour  = await collectTour().catch((e) => { console.error("TourAPI 실패:", e.message); return []; });
   const std2  = await collectStandard2().catch((e) => { console.error("표준데이터 추가 실패:", e.message); return []; });
+  const nyj   = await collectNamyangju().catch((e) => { console.error("남양주 실패:", e.message); return []; });
 
   if (PEEK) { console.log("\n칸 이름 확인만 하고 끝냅니다."); return; }
 
@@ -815,7 +926,7 @@ const MANUAL = [
   console.log(`  이름 겹쳐 뺀 것 ${dropped}건`);
 
   // 빈 칸을 빼고 좌표 자릿수를 줄여 파일을 가볍게 만든다
-  const items = [...merged, ...seoul, ...MANUAL].map((it) => {
+  const items = [...merged, ...seoul, ...nyj, ...MANUAL].map((it) => {
     const o = {};
     for (const [k, v] of Object.entries(it)) {
       if (v === "" || v === null || v === undefined) continue;
@@ -839,6 +950,6 @@ const MANUAL = [
   console.log(`  행사·축제 ${items.filter(i => i.kind === "festival").length}`);
   console.log(`  예약 프로그램 ${items.filter(i => i.kind === "reserve").length}`);
   console.log(`  상시 시설 ${items.filter(i => i.kind === "place").length}`);
-  console.log(`  (자료원별 중복 제거 전) 서울 ${seoul.length} / 표준데이터 ${std.length} / TourAPI ${tour.length} / 표준데이터 추가 ${std2.length}`);
+  console.log(`  (자료원별 중복 제거 전) 서울 ${seoul.length} / 표준데이터 ${std.length} / TourAPI ${tour.length} / 표준데이터 추가 ${std2.length} / 남양주 ${nyj.length}`);
   console.log(`  경기도 ${items.filter(i => String(i.area || "").startsWith("경기")).length}`);
 })();
