@@ -16,6 +16,26 @@ keys.example.json   키 넣는 자리 견본
 
 미리보기 만드는 법 — `index.html`의 `<script>` 앞에 `window.__DATA__`로 data.json을 끼워 넣는다.
 
+## 배포 (다모인 앱들과 완전히 별개다)
+
+**주소: https://nswf301.github.io/weekend-go/** — 저장소 `nswf301/weekend-go` (공개)
+
+이 폴더에서 아래 세 줄이면 끝이다. 1~2분 뒤 자동으로 반영된다.
+
+```
+git add -A
+git commit -m "무엇을 고쳤는지"
+git push
+```
+
+- **Firebase가 아니다.** `firebase.json`도 `배포.bat`도 없다. GitHub Pages가 저장소를 그대로 웹에 띄운다.
+- `C:\Users\seong\damoin-apps`(다모인 앱 모음)와는 **저장소가 다르다.** 거기 `배포.bat`이
+  루트에서 `git add -A`를 하지만 이 앱에는 못 미친다.
+- ⚠️ **이 폴더를 damoin-apps 안으로 옮기지 말 것.** 옮기면 damoin 저장소에 딸려 들어가
+  배포.bat이 이 앱까지 쓸어 담는다.
+- `keys.json`은 `.gitignore`에 있어 공개 저장소에 올라가지 않는다 (확인 완료).
+- `gh`는 `C:\Users\seong\tools\bin\gh.exe` (winget이 없는 LTSC라 zip으로 설치).
+
 ## 현재 자료 (2026-08-13 기준, 합계 2,445건)
 
 | 출처 | 반경 내 | 비고 |
@@ -160,10 +180,9 @@ TourAPI는 주소 칸 이름이 달라서(`addr1`), 주소 문자열만 받는 `
 1. **길찾기 링크** — 좌표가 있으니 카드에 네이버 지도 링크 추가 (키 불필요)
 2. **서울 체육시설 재검토** — 통째로 뺐지만 수영장·빙상장·눈썰매장이 섞여 있을 수 있다
 3. **공유누리 붙이기** — 승인 나면. 경기도 예약 프로그램이 지금 0건이라 가장 큰 구멍
-4. 배포 — `nswf301/weekend-go` 저장소 → GitHub Pages (`gh`는 `C:\Users\seong\tools\bin`에 설치됨)
-   - ⚠️ **서울 열린데이터광장에 신청해둔 사용URL이 틀렸다.** `https://epoko77-ai.github.io/…`로
-     적혀 있는데 **epoko77-ai는 남의 계정**이다(스킬을 내려받아 쓴 곳이라 이름이 섞여 들어갔다).
-     실제 주소는 `https://nswf301.github.io/weekend-go/` 이므로 서울시에 수정 신청해야 한다
+4. **서울 열린데이터광장 사용URL 수정 신청** — 신청해둔 주소가 `https://epoko77-ai.github.io/…`인데
+   **epoko77-ai는 남의 계정**이다(그 사람의 스킬을 내려받아 쓰다 이름이 섞여 들어갔다).
+   실제 주소 `https://nswf301.github.io/weekend-go/` 로 고쳐야 한다
 5. 매일 자동 수집 — GitHub Actions
 
 ## 안 되는 것 (확인 완료, 다시 찾지 말 것)
