@@ -247,11 +247,19 @@ const SIDO = {
   "강원특별자치도":"강원", "강원도":"강원",
   "충청남도":"충남", "충청북도":"충북", "세종특별자치시":"세종",
   "대전광역시":"대전", "전북특별자치도":"전북",
+  "경상북도":"경북", "경상남도":"경남", "대구광역시":"대구",
+  "부산광역시":"부산", "울산광역시":"울산", "광주광역시":"광주",
+  "전라남도":"전남", "제주특별자치도":"제주", "세종특별시":"세종",
 };
+// 긴 이름부터 검사해야 "강원특별자치도"가 "강원도"보다 먼저 걸린다
+const SIDO_NAMES = Object.keys(SIDO).sort((a, b) => b.length - a.length);
 // 주소 문자열만 받는 속살. TourAPI처럼 칸 이름이 다른 자료도 같은 규칙을 쓰게 하려고 뺐다.
 function areaOfAddr(addr){
   if(!addr) return "";
-  const [sido, sigungu] = String(addr).trim().split(/\s+/);
+  let [sido, sigungu] = String(addr).trim().split(/\s+/);
+  // "강원특별자치도양구군 양구읍"처럼 시도와 시군구가 붙어 있는 주소를 갈라낸다
+  const stuck = SIDO_NAMES.find(k => sido.length > k.length && sido.startsWith(k));
+  if(stuck){ sigungu = sido.slice(stuck.length); sido = stuck; }
   if(!sigungu) return sido;
   const short = SIDO[sido];
   if(short === "") return sigungu;                 // 서울은 구 이름만
