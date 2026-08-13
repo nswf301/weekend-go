@@ -160,9 +160,10 @@ TourAPI는 주소 칸 이름이 달라서(`addr1`), 주소 문자열만 받는 `
 1. **길찾기 링크** — 좌표가 있으니 카드에 네이버 지도 링크 추가 (키 불필요)
 2. **서울 체육시설 재검토** — 통째로 뺐지만 수영장·빙상장·눈썰매장이 섞여 있을 수 있다
 3. **공유누리 붙이기** — 승인 나면. 경기도 예약 프로그램이 지금 0건이라 가장 큰 구멍
-4. 배포 — `gh` 설치 → `epoko77-ai/weekend-go` 저장소 → GitHub Pages
-   - 서울 열린데이터광장에 사용URL을 `https://epoko77-ai.github.io/weekend-go/`로 신청해뒀다.
-     저장소 이름을 바꾸면 그쪽도 고쳐야 한다
+4. 배포 — `nswf301/weekend-go` 저장소 → GitHub Pages (`gh`는 `C:\Users\seong\tools\bin`에 설치됨)
+   - ⚠️ **서울 열린데이터광장에 신청해둔 사용URL이 틀렸다.** `https://epoko77-ai.github.io/…`로
+     적혀 있는데 **epoko77-ai는 남의 계정**이다(스킬을 내려받아 쓴 곳이라 이름이 섞여 들어갔다).
+     실제 주소는 `https://nswf301.github.io/weekend-go/` 이므로 서울시에 수정 신청해야 한다
 5. 매일 자동 수집 — GitHub Actions
 
 ## 안 되는 것 (확인 완료, 다시 찾지 말 것)
