@@ -829,7 +829,10 @@ async function collectNamyangju() {
 
       const [t1, t2] = term.split("~");
       const rcptStart = toDate(t1 || "");
-      const rcptEnd   = toDate(t2 || "");
+      // 상시 접수를 9999-01-01로 적어두는 항목이 있다(REMEMBER 1910 전시해설).
+      // 그대로 두면 카드에 "접수 마감 9999년 1월 1일"이 뜬다. 마감이 없는 것으로 본다.
+      const rcptEndRaw = toDate(t2 || "");
+      const rcptEnd    = /^9999/.test(rcptEndRaw) ? "" : rcptEndRaw;
 
       // 상세는 접수중인 것만 연다(10건 안팎이라 부담 없다).
       // 못 받아도 목록 정보만으로 넣는다 — 수집 전체가 죽으면 안 된다.
