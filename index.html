@@ -1,0 +1,673 @@
+<title>주말 어디 가지</title>
+
+<style>
+/* ── 팔레트: 이정표(도로표지) 계열 딥 틸 + 청록기 도는 중성색 ───────── */
+:root{
+  --paper:#F1F5F3;
+  --surface:#FFFFFF;
+  --surface-2:#F7FAF9;
+  --ink:#14201E;
+  --ink-soft:#5A6B67;
+  --ink-faint:#8A9A96;
+  --line:#DBE4E1;
+  --line-strong:#C3D0CC;
+  --accent:#146B58;
+  --accent-ink:#0C463A;
+  --accent-soft:#E1EFEA;
+  --warn:#A9501E;
+  --warn-soft:#FAE9DD;
+  --shadow:0 1px 2px rgba(20,32,30,.06), 0 6px 18px rgba(20,32,30,.05);
+  --sun:#C0392B;
+  --sat:#2C6FBB;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1413;
+    --surface:#161F1D;
+    --surface-2:#1B2523;
+    --ink:#E7EEEC;
+    --ink-soft:#95A6A2;
+    --ink-faint:#6D7E7A;
+    --line:#26322F;
+    --line-strong:#33423E;
+    --accent:#4FBFA1;
+    --accent-ink:#8FD9C4;
+    --accent-soft:#153029;
+    --warn:#E09A62;
+    --warn-soft:#33220F;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+    --sun:#E8776B;
+    --sat:#77A9E0;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1413;
+  --surface:#161F1D;
+  --surface-2:#1B2523;
+  --ink:#E7EEEC;
+  --ink-soft:#95A6A2;
+  --ink-faint:#6D7E7A;
+  --line:#26322F;
+  --line-strong:#33423E;
+  --accent:#4FBFA1;
+  --accent-ink:#8FD9C4;
+  --accent-soft:#153029;
+  --warn:#E09A62;
+  --warn-soft:#33220F;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  --sun:#E8776B;
+  --sat:#77A9E0;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,
+              "Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-text-size-adjust:100%;
+}
+
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 64px}
+
+/* ── 머리 ────────────────────────────────────────────────── */
+.head{display:flex;flex-direction:column;gap:6px;padding:4px 0 18px}
+.head h1{margin:0;font-size:24px;line-height:1.3;letter-spacing:-.02em;font-weight:700}
+.head p{margin:0;font-size:14px;color:var(--ink-soft)}
+
+/* ── 탭 ──────────────────────────────────────────────────── */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{
+  appearance:none;background:none;border:0;
+  padding:11px 16px;font:inherit;font-size:16px;font-weight:600;
+  color:var(--ink-faint);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+.panel[hidden]{display:none}
+
+/* ── 샘플 안내 ───────────────────────────────────────────── */
+.notice{
+  display:flex;gap:10px;align-items:flex-start;
+  background:var(--warn-soft);border:1px solid var(--line);
+  border-left:3px solid var(--warn);
+  border-radius:6px;padding:12px 14px;margin-bottom:18px;
+}
+.notice strong{color:var(--warn);font-size:14px;letter-spacing:.04em;flex:none;padding-top:1px}
+.notice span{font-size:14px;color:var(--ink-soft);line-height:1.55}
+
+/* ── 필터 ───────────────────────────────────────────────── */
+.panelbox{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:16px;box-shadow:var(--shadow);
+}
+.field{display:flex;flex-direction:column;gap:8px}
+.field + .field{margin-top:16px}
+.label{
+  font-size:14px;font-weight:600;color:var(--ink-soft);
+  letter-spacing:.06em;text-transform:uppercase;
+}
+select,input[type="date"],input[type="text"]{
+  font:inherit;font-size:16px;color:var(--ink);
+  background:var(--surface-2);border:1px solid var(--line-strong);
+  border-radius:8px;padding:10px 12px;width:100%;
+}
+select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:16px}
+.check input{width:20px;height:20px;accent-color:var(--accent);margin:0}
+.checks{display:flex;flex-wrap:wrap;gap:10px 18px}
+
+/* ── 달력 ───────────────────────────────────────────────── */
+.cal{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface-2)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 10px}
+.cal-title{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.cal-nav{
+  appearance:none;background:var(--surface);color:var(--ink);
+  border:1px solid var(--line-strong);border-radius:8px;
+  width:36px;height:36px;font:inherit;font-size:16px;cursor:pointer;line-height:1;
+}
+.cal-nav:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dow{text-align:center;font-size:14px;color:var(--ink-faint);padding:2px 0 6px}
+.cal-dow.s0{color:var(--sun)} .cal-dow.s6{color:var(--sat)}
+.cal-day{
+  appearance:none;background:none;border:0;font:inherit;font-size:16px;
+  color:var(--ink);aspect-ratio:1;border-radius:8px;cursor:pointer;
+  font-variant-numeric:tabular-nums;
+}
+.cal-day:hover{background:var(--accent-soft)}
+.cal-day.s0{color:var(--sun)} .cal-day.s6{color:var(--sat)}
+.cal-day.out{opacity:.35}
+.cal-day.today{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.cal-day.on{background:var(--accent);color:#fff;font-weight:700;box-shadow:none}
+:root[data-theme="dark"] .cal-day.on,
+:root:not([data-theme="light"]) .cal-day.on{color:#0E1413}
+.cal-day:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+/* ── 섹션 (행사·예약·상시) ──────────────────────────────── */
+.group{margin-top:22px}
+.group-head{
+  display:flex;align-items:baseline;gap:10px;
+  padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line);
+}
+.group-head h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.group-head .n{font-size:14px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+
+/* ── 지역 묶음 (접었다 펴기) ─────────────────────────────── */
+.zone{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:8px}
+.zone > summary{
+  list-style:none;cursor:pointer;padding:14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:16px;font-weight:700;
+}
+.zone > summary::-webkit-details-marker{display:none}
+.zone > summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:10px}
+.zone > summary .n{font-size:16px;font-weight:400;color:var(--ink-soft)}
+.zone > summary .arrow{color:var(--ink-faint);transition:transform .15s}
+.zone[open] > summary .arrow{transform:rotate(90deg)}
+.zone-body{padding:0 10px 10px}
+.zone-body .card{margin-bottom:8px}
+.zone-body .card:last-child{margin-bottom:0}
+@media (prefers-reduced-motion:reduce){.zone > summary .arrow{transition:none}}
+
+/* ── 결과 요약 ───────────────────────────────────────────── */
+.summary{
+  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+  padding:22px 2px 10px;
+}
+.summary .count{
+  font-size:24px;font-weight:700;color:var(--accent);
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+}
+.summary .desc{font-size:14px;color:var(--ink-soft)}
+
+/* ── 그룹 ───────────────────────────────────────────────── */
+/* ── 카드: 왼쪽 거리 = 이정표 ─────────────────────────────── */
+.card{
+  display:grid;grid-template-columns:1fr;gap:14px;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:14px;margin-bottom:8px;
+  box-shadow:var(--shadow);
+}
+.card.has-img{grid-template-columns:152px 1fr}
+.thumb{
+  width:152px;height:152px;align-self:start;
+  border-radius:8px;object-fit:cover;
+  background:var(--surface-2);border:1px solid var(--line);
+}
+.body{display:flex;flex-direction:column;gap:5px;min-width:0}
+/* 카드 안 글자는 모두 16px로 통일 */
+.meta{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  font-size:16px;color:var(--ink-soft);
+}
+.area{font-weight:600;color:var(--ink)}
+.dot{color:var(--line-strong)}
+.title{font-size:16px;font-weight:600;line-height:1.45;margin:0;letter-spacing:-.01em}
+.when{
+  font-size:16px;color:var(--ink-soft);
+  font-variant-numeric:tabular-nums;
+}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:3px}
+.badges{display:flex;gap:5px;flex-wrap:wrap}
+.badge{
+  font-size:16px;padding:2px 9px;border-radius:5px;font-weight:600;
+  background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line);
+}
+.badge.open{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.badge.soon{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.badge.free{background:transparent;color:var(--ink-soft)}
+.go{
+  font-size:16px;font-weight:600;color:var(--accent);
+  text-decoration:none;white-space:nowrap;padding:4px 2px;
+}
+.go:hover{text-decoration:underline}
+.go:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+.empty{
+  text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:16px;
+  background:var(--surface);border:1px dashed var(--line-strong);border-radius:10px;
+}
+
+/* ── 설정 ───────────────────────────────────────────────── */
+.help{font-size:14px;color:var(--ink-soft);margin:0}
+.btn{
+  appearance:none;font:inherit;font-size:16px;font-weight:600;
+  background:var(--accent);color:#fff;border:0;border-radius:8px;
+  padding:12px 20px;cursor:pointer;margin-top:18px;
+}
+:root[data-theme="dark"] .btn,
+:root:not([data-theme="light"]) .btn{color:#0E1413}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.saved{font-size:14px;color:var(--accent);margin-left:10px}
+
+.foot{
+  margin-top:32px;padding-top:16px;border-top:1px solid var(--line);
+  font-size:14px;color:var(--ink-faint);line-height:1.7;
+}
+.foot b{color:var(--ink-soft);font-weight:600}
+
+@media (max-width:420px){
+  .card{gap:12px;padding:12px}
+  .card.has-img{grid-template-columns:120px 1fr}
+  .thumb{width:120px;height:120px}
+}
+</style>
+
+<div class="wrap">
+
+  <div class="head">
+    <h1>주말 어디 가지</h1>
+    <p>날짜를 먼저 고르면, 그날 갈 수 있는 곳만 거리순으로 보여줍니다.</p>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-find" aria-controls="panel-find" aria-selected="true">찾기</button>
+    <button class="tab" role="tab" id="tab-set" aria-controls="panel-set" aria-selected="false">설정</button>
+  </div>
+
+  <!-- ─────────── 찾기 ─────────── -->
+  <section class="panel" id="panel-find" role="tabpanel" aria-labelledby="tab-find">
+
+    <div class="notice" id="notice">
+      <strong>샘플</strong>
+      <span>지금 보이는 목록은 화면 확인용 가짜 데이터입니다. 실제 공공데이터를 연결하면 같은 모양으로 진짜 정보가 채워집니다.</span>
+    </div>
+
+    <div class="panelbox">
+      <div class="field">
+        <span class="label">언제</span>
+        <div class="cal" id="cal"></div>
+      </div>
+
+      <div class="field">
+        <span class="label">누가 가나</span>
+        <div class="checks" id="bandBox"></div>
+        <p class="help">고른 나이가 갈 수 있는 것만 보여줍니다. 다 끄면 가리지 않습니다.</p>
+      </div>
+    </div>
+
+    <div class="summary">
+      <span class="count" id="count">0</span>
+      <span class="desc" id="desc"></span>
+    </div>
+
+    <div id="results"></div>
+
+    <div class="foot">
+      <b>데이터 출처</b><br>
+      한국관광공사 관광정보 개방 서비스 · 서울시 공공서비스예약<br>
+      매일 한 번 새로 받아옵니다. 실제 잔여 자리는 각 기관 페이지에서 다시 확인하세요.
+    </div>
+  </section>
+
+  <!-- ─────────── 설정 ─────────── -->
+  <section class="panel" id="panel-set" role="tabpanel" aria-labelledby="tab-set" hidden>
+    <div class="panelbox">
+      <div class="field">
+        <span class="label">출발지</span>
+        <select id="originSel"></select>
+        <p class="help">여기서부터의 거리를 재서 가까운 순으로 정렬합니다.</p>
+      </div>
+
+      <button class="btn" id="saveBtn">저장</button>
+      <span class="saved" id="savedMsg" hidden>저장했습니다</span>
+    </div>
+
+    <div class="foot">
+      설정은 이 기기에만 저장됩니다. 다른 사람에게는 영향이 없습니다.
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ── 출발지 좌표 (자치구 중심 근사값 — 100km 단위 거르기엔 충분) ── */
+const ORIGINS = [
+  ["노원구",37.654,127.056],["도봉구",37.669,127.047],["강북구",37.640,127.026],
+  ["성북구",37.589,127.017],["중랑구",37.606,127.093],["동대문구",37.574,127.040],
+  ["광진구",37.538,127.082],["성동구",37.563,127.037],["종로구",37.573,126.979],
+  ["중구",37.564,126.997],["용산구",37.532,126.990],["서대문구",37.579,126.937],
+  ["마포구",37.566,126.902],["은평구",37.603,126.929],["강서구",37.551,126.850],
+  ["양천구",37.517,126.866],["구로구",37.495,126.887],["영등포구",37.526,126.896],
+  ["동작구",37.512,126.939],["관악구",37.478,126.951],["금천구",37.457,126.895],
+  ["서초구",37.484,127.033],["강남구",37.517,127.047],["송파구",37.514,127.106],
+  ["강동구",37.530,127.124]
+];
+
+/* ── 샘플 데이터 (실제 API 응답과 같은 모양) ── */
+const SAMPLE = [
+  {kind:"festival",title:"자라섬 물놀이 축제",area:"가평군",lat:37.828,lng:127.529,start:"2026-08-14",end:"2026-08-17",fee:"무료",kids:true},
+  {kind:"festival",title:"두물머리 여름 반딧불이 관찰",area:"양평군",lat:37.529,lng:127.323,start:"2026-08-15",end:"2026-08-16",fee:"5,000원",kids:true},
+  {kind:"festival",title:"헤이리 어린이 인형극 주간",area:"파주시",lat:37.795,lng:126.696,start:"2026-08-10",end:"2026-08-23",fee:"12,000원",kids:true},
+  {kind:"festival",title:"강화 갯벌 생태 체험",area:"인천 강화군",lat:37.747,lng:126.488,start:"2026-08-16",end:"2026-08-16",fee:"8,000원",kids:true},
+  {kind:"festival",title:"남이섬 여름 야외극장",area:"춘천시",lat:37.791,lng:127.525,start:"2026-08-01",end:"2026-08-31",fee:"16,000원",kids:true},
+  {kind:"festival",title:"안성맞춤 남사당 상설공연",area:"안성시",lat:37.008,lng:127.270,start:"2026-08-16",end:"2026-08-16",fee:"무료",kids:true},
+  {kind:"festival",title:"도자기 물레 체험 주간",area:"이천시",lat:37.272,lng:127.435,start:"2026-08-12",end:"2026-08-20",fee:"15,000원",kids:true},
+  {kind:"festival",title:"광명동굴 여름 특별전",area:"광명시",lat:37.478,lng:126.865,start:"2026-07-20",end:"2026-08-31",fee:"6,000원",kids:true},
+  {kind:"festival",title:"원주 한지문화제",area:"원주시",lat:37.342,lng:127.920,start:"2026-08-15",end:"2026-08-18",fee:"무료",kids:true},
+  {kind:"festival",title:"고양 호수공원 야간 분수쇼",area:"고양시",lat:37.657,lng:126.769,start:"2026-08-01",end:"2026-08-30",fee:"무료",kids:true},
+  {kind:"festival",title:"수원화성 달빛 걷기",area:"수원시",lat:37.285,lng:127.012,start:"2026-08-16",end:"2026-08-16",fee:"무료",kids:false},
+
+  {kind:"reserve",title:"어린이 목공교실 (초등 1~3학년)",area:"노원구",lat:37.654,lng:127.056,rcptEnd:"2026-08-14",fee:"무료",kids:true},
+  {kind:"reserve",title:"천문대 여름 별자리 관측",area:"도봉구",lat:37.669,lng:127.047,rcptEnd:"2026-08-13",fee:"3,000원",kids:true},
+  {kind:"reserve",title:"가족 도자기 만들기",area:"성북구",lat:37.589,lng:127.017,rcptEnd:"2026-08-20",fee:"10,000원",kids:true},
+  {kind:"reserve",title:"실내수영장 가족 자유수영",area:"중랑구",lat:37.606,lng:127.093,rcptEnd:"2026-08-25",fee:"2,000원",kids:true},
+  {kind:"reserve",title:"한강 카약 체험 (초등 4학년 이상)",area:"광진구",lat:37.538,lng:127.082,rcptEnd:"2026-08-18",fee:"12,000원",kids:true},
+  {kind:"reserve",title:"성인 도예 심화반",area:"종로구",lat:37.573,lng:126.979,rcptEnd:"2026-08-22",fee:"40,000원",kids:false}
+];
+
+/* ── 실제 자료 (data.json) — 없으면 위 샘플로 돈다 ── */
+let DATA = SAMPLE;
+let IS_SAMPLE = true;
+
+async function loadData(){
+  try{
+    // 미리보기용으로 자료가 페이지에 박혀 있으면 그걸 쓴다
+    const j = window.__DATA__ || await (await fetch("data.json",{cache:"no-store"})).json();
+    if(!j.items || !j.items.length) return;
+    DATA = j.items;
+    IS_SAMPLE = false;
+    const d = new Date(j.generatedAt);
+    document.getElementById("notice").innerHTML =
+      `<strong>자료</strong><span>${j.items.length}건 · ${d.getMonth()+1}월 ${d.getDate()}일 기준. `
+      + `실제 남은 자리는 각 기관 페이지에서 다시 확인하세요.</span>`;
+  }catch(e){ /* 파일이 없으면 샘플 유지 */ }
+}
+
+/* ── 상태 ── */
+const state = {
+  origin:"노원구",
+  dist:100,
+  bands:new Set(["유아","초등학생"]),   // 기본으로 켜둘 것
+  date:null      // null = 이번 주 토요일
+};
+
+// 나이 묶음. 켠 묶음과 겹치는 프로그램만 보여준다
+const BANDS = [["유아",3,6],["초등학생",7,12],["청소년",13,18],["성인",19,99]];
+
+/* ── 화면에 넣기 전 특수문자 막기 ── */
+const esc = s => String(s).replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ── 거리 계산 (하버사인) ── */
+function km(aLat,aLng,bLat,bLng){
+  const R=6371, r=Math.PI/180;
+  const dLat=(bLat-aLat)*r, dLng=(bLng-aLng)*r;
+  const h=Math.sin(dLat/2)**2 + Math.cos(aLat*r)*Math.cos(bLat*r)*Math.sin(dLng/2)**2;
+  return Math.round(2*R*Math.asin(Math.sqrt(h)));
+}
+
+/* ── 날짜 도구 ── */
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const DAYS=["일","월","화","수","목","금","토"];
+
+function nextWeekday(target){           // 이번 주(또는 다음) 토/일
+  const d=new Date(); d.setHours(0,0,0,0);
+  const diff=(target-d.getDay()+7)%7;
+  d.setDate(d.getDate()+diff);
+  return d;
+}
+function label(dstr){
+  const d=new Date(dstr+"T00:00:00");
+  return `${d.getMonth()+1}월 ${d.getDate()}일 ${DAYS[d.getDay()]}요일`;
+}
+
+/* ── 날짜: 달력에서 고른다. 처음엔 이번 주 토요일 ── */
+state.date = iso(nextWeekday(6));
+
+/* ── 판정 ── */
+
+const TODAY_STR = iso(new Date());
+
+// 제목에 "[평일]" "주말" 같은 표시가 있으면 요일을 맞춰본다
+function dayFits(item,dstr){
+  const t = item.title || "";
+  const weekend = [0,6].includes(new Date(dstr+"T00:00:00").getDay());
+  if(/평일/.test(t) && !/주말|토요일|일요일|토\/일/.test(t)) return !weekend;
+  if(/주말|토요일|일요일|토\/일/.test(t) && !/평일/.test(t)) return weekend;
+  return true;
+}
+
+function activeOn(item,dstr){
+  if(item.kind==="place"||item.kind==="manual") return true;   // 상시
+
+  if(item.kind==="reserve"){
+    // 그날 이용할 수 있고 + 접수가 아직 안 끝난 것
+    const inPeriod = (!item.start||item.start<=dstr) && (!item.end||dstr<=item.end);
+    const openNow  = !item.rcptEnd || TODAY_STR<=item.rcptEnd;
+    return inPeriod && openNow && dayFits(item,dstr);
+  }
+
+  if(!item.start && !item.end) return true;
+  return (!item.start||item.start<=dstr) && (!item.end||dstr<=item.end);
+}
+
+function badges(item,dstr){
+  const out=[];
+  if(item.kind==="reserve" && item.rcptEnd){
+    const left=Math.round((new Date(item.rcptEnd)-new Date(dstr))/864e5);
+    out.push(left<=2 ? {t:`마감 임박 D-${Math.max(left,0)}`,c:"soon"} : {t:"접수중",c:"open"});
+  }else if(item.kind==="place"){
+    out.push({t:"상시",c:"open"});
+  }else if(item.kind==="manual"){
+    out.push({t:"직접 확인",c:"soon"});
+  }else if(item.start && item.start===item.end){
+    out.push({t:"하루만",c:"soon"});
+  }else if(item.start){
+    out.push({t:"기간 중",c:"open"});
+  }
+  if(item.sub)   out.push({t:item.sub,c:""});
+  else if(item.group) out.push({t:item.group,c:""});
+  const fee=item.fee||"";
+  if(fee) out.push({t:fee, c:/무료/.test(fee)?"free":""});
+  if(item.park) out.push({t:item.park,c:"free"});
+  return out;
+}
+
+/* ── 그리기 ── */
+function render(){
+  const o=ORIGINS.find(x=>x[0]===state.origin);
+  const dstr=state.date;
+
+  // 나이 범위. 안 적힌 것은 "누구나"로 본다
+  const lo = i => i.ageMin==null ? 0  : i.ageMin;
+  const hi = i => i.ageMax==null ? 99 : i.ageMax;
+
+  // 켜둔 나이 묶음과 한 살이라도 겹치면 통과. 하나도 안 켜면 다 통과
+  const fitsBand = i => state.bands.size===0 || BANDS.some(([n,a,b]) =>
+    state.bands.has(n) && lo(i)<=b && a<=hi(i));
+
+  const list=DATA
+    .filter(fitsBand)
+    .filter(i=>activeOn(i,dstr))
+    .map(i=>({...i, d:km(o[1],o[2],i.lat,i.lng)}))
+    // 설정에 넣은 출발지에서 가까운 순
+    .sort((a,b)=>a.d-b.d);
+
+  document.getElementById("count").textContent=list.length;
+  document.getElementById("desc").textContent=
+    `${label(dstr)} · ${state.origin}에서 가까운 순`;
+
+  const box=document.getElementById("results");
+  box.innerHTML="";
+
+  if(!list.length){
+    box.innerHTML=`<div class="empty">그 조건에 맞는 곳이 없습니다.<br>거리를 늘리거나 다른 날짜를 골라보세요.</div>`;
+    return;
+  }
+
+  // 상시 시설이 1,700곳이라 가까운 데까지만 남긴다.
+  // 500이면 30km 안, 경기도 18개 시군까지 들어온다 (40이면 서울 8km에서 끊겼다)
+  let placeLeft = 500;
+  const shown = list.filter(i => i.kind!=="place" || placeLeft-- > 0);
+
+  [["festival","행사 · 축제"],["reserve","예약해야 하는 곳"],
+   ["place","아무 때나 가도 되는 곳"],["manual","직접 확인이 필요한 곳"]].forEach(([kind,secName])=>{
+    const inSec = shown.filter(i=>i.kind===kind);
+    if(!inSec.length) return;
+
+    const sec=document.createElement("div");
+    sec.className="group";
+    sec.innerHTML=`<div class="group-head"><h2>${secName}</h2>`
+      + `<span class="n">${inSec.length}곳</span></div>`;
+
+    // 섹션 안에서 다시 지역별로 묶는다. 가까운 순이라 지역 순서도 가까운 순
+    const zones = new Map();
+    inSec.forEach(i => {
+      const k = i.area || "기타";
+      if(!zones.has(k)) zones.set(k, []);
+      zones.get(k).push(i);
+    });
+
+    let first = true;
+    zones.forEach((items, zoneName)=>{
+    const g=document.createElement("details");
+    g.className="zone";
+    if(first){ g.open = true; first = false; }   // 섹션마다 가장 가까운 지역만 펴둔다
+    g.innerHTML=`<summary><span><span class="arrow">▸</span> ${esc(zoneName)}</span>`
+      + `<span class="n">${items.length}곳</span></summary>`
+      + `<div class="zone-body"></div>`;
+    const body=g.querySelector(".zone-body");
+
+    items.forEach(i=>{
+      let when="";
+      if(i.kind==="reserve" && i.rcptEnd)      when=`접수 마감 ${label(i.rcptEnd)}`;
+      else if(i.start && i.end && i.start!==i.end) when=`${label(i.start)} ~ ${label(i.end)}`;
+      else if(i.start)                          when=label(i.start);
+      else if(i.note)                           when=i.note;
+      if(i.time) when += ` · ${i.time}`;
+
+      const link = i.url
+        ? `<a class="go" href="${esc(i.url)}" target="_blank" rel="noopener">자세히 →</a>`
+        : `<span class="go" style="opacity:.4">링크 없음</span>`;
+
+      // 사진은 서울 프로그램에만 있다. 못 불러오면 칸째로 접는다
+      const thumb = i.img
+        ? `<img class="thumb" src="${esc(i.img)}" alt="" loading="lazy"
+             onerror="this.parentNode.classList.remove('has-img');this.remove()">`
+        : "";
+
+      const card=document.createElement("div");
+      card.className = i.img ? "card has-img" : "card";
+      card.innerHTML=`
+        ${thumb}
+        <div class="body">
+          <div class="meta"><span class="area">${esc(i.area||"")}</span>${
+            i.place ? `<span class="dot">·</span><span>${esc(i.place)}</span>` : ""
+          }</div>
+          ${i.target ? `<div class="when">대상 · ${esc(i.target)}</div>` : ""}
+          <p class="title">${esc(i.title||"")}</p>
+          ${when ? `<div class="when">${esc(when)}</div>` : ""}
+          <div class="row">
+            <div class="badges">${
+              badges(i,dstr).map(b=>`<span class="badge ${b.c}">${esc(b.t)}</span>`).join("")
+            }</div>
+            ${link}
+          </div>
+        </div>`;
+      body.appendChild(card);
+    });
+      sec.appendChild(g);
+    });
+    box.appendChild(sec);
+  });
+}
+
+/* ── 달력 ── */
+const DOW=["일","월","화","수","목","금","토"];
+let calCursor = new Date(state.date+"T00:00:00");
+
+function drawCal(){
+  const y=calCursor.getFullYear(), m=calCursor.getMonth();
+  const startDow=new Date(y,m,1).getDay();
+  const lastDay=new Date(y,m+1,0).getDate();
+  const todayStr=iso(new Date());
+
+  const cal=document.getElementById("cal");
+  cal.innerHTML=
+    `<div class="cal-head">
+       <button class="cal-nav" type="button" id="calPrev" aria-label="이전 달">‹</button>
+       <span class="cal-title">${y}년 ${m+1}월</span>
+       <button class="cal-nav" type="button" id="calNext" aria-label="다음 달">›</button>
+     </div>
+     <div class="cal-grid">${
+       DOW.map((d,n)=>`<div class="cal-dow s${n}">${d}</div>`).join("")
+     }</div>
+     <div class="cal-grid" id="calDays"></div>`;
+
+  const days=cal.querySelector("#calDays");
+  for(let n=0;n<startDow;n++) days.appendChild(document.createElement("div"));
+
+  for(let d=1;d<=lastDay;d++){
+    const key=`${y}-${pad(m+1)}-${pad(d)}`;
+    const dow=new Date(y,m,d).getDay();
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="cal-day s"+dow
+      + (key===state.date ? " on" : "")
+      + (key===todayStr ? " today" : "");
+    b.textContent=d;
+    b.onclick=()=>{ state.date=key; drawCal(); render(); };
+    days.appendChild(b);
+  }
+
+  cal.querySelector("#calPrev").onclick=()=>{ calCursor=new Date(y,m-1,1); drawCal(); };
+  cal.querySelector("#calNext").onclick=()=>{ calCursor=new Date(y,m+1,1); drawCal(); };
+}
+
+/* ── 탭 ── */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>{
+      const on = x===t;
+      x.setAttribute("aria-selected", on?"true":"false");
+      document.getElementById(x.getAttribute("aria-controls")).hidden=!on;
+    });
+  };
+});
+
+/* ── 설정 ── */
+const originSel=document.getElementById("originSel");
+ORIGINS.forEach(([n])=>{
+  const op=document.createElement("option"); op.value=n; op.textContent=`서울 ${n}`;
+  originSel.appendChild(op);
+});
+
+try{
+  const saved=JSON.parse(localStorage.getItem("wg_set")||"{}");
+  if(saved.origin) state.origin=saved.origin;
+}catch(e){}
+
+originSel.value=state.origin;
+
+document.getElementById("saveBtn").onclick=()=>{
+  state.origin=originSel.value;
+  try{ localStorage.setItem("wg_set",JSON.stringify({origin:state.origin})); }catch(e){}
+  const m=document.getElementById("savedMsg");
+  m.hidden=false; setTimeout(()=>m.hidden=true,2000);
+  render();
+};
+const bandBox=document.getElementById("bandBox");
+BANDS.forEach(([name,a,b])=>{
+  const on = state.bands.has(name);
+  const l=document.createElement("label");
+  l.className="check";
+  l.innerHTML=`<input type="checkbox" ${on?"checked":""}> ${name} <span style="color:var(--ink-faint)">${a}~${b}세</span>`;
+  l.querySelector("input").onchange=e=>{
+    if(e.target.checked) state.bands.add(name); else state.bands.delete(name);
+    render();
+  };
+  bandBox.appendChild(l);
+});
+drawCal();
+render();
+loadData().then(render);
+</script>
