@@ -394,6 +394,17 @@ const TOUR_CULTURE_CAT = {
   A02060100: "박물관", A02060200: "기념관", A02060300: "전시관", A02060500: "미술관/화랑",
 };
 
+/* TourAPI 응답에는 홈페이지가 없지만 contentid가 있다.
+ * 그 번호로 대한민국구석구석 공식 소개 페이지 주소를 만든다
+ * (사진·설명·이용시간·주차·문의처가 다 있는 페이지).
+ * 번호가 없으면 억지로 만들지 않고 빈 값을 준다.
+ */
+function tourUrl(contentid) {
+  const id = String(contentid ?? "").trim();
+  if (!id) return "";
+  return `https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=${id}`;
+}
+
 async function collectTour() {
   // 표준데이터와 같은 키를 쓴다. Encoding 키(%가 섞인 것)는 그대로 둔다.
   const raw = KEYS.dataGoKr;
@@ -461,7 +472,7 @@ async function collectTour() {
         place: r.addr1 || "",
         target: "", ageMin: null, ageMax: null,
         fee: "", status: "", start: "", end: "", time: "",
-        url: "", img: r.firstimage || "", tel: r.tel || "",
+        url: tourUrl(r.contentid), img: r.firstimage || "", tel: r.tel || "",
         note: "", park: "",
         lat, lng,
       });
@@ -487,7 +498,7 @@ async function collectTour() {
         place: r.addr1 || "",
         target: "", ageMin: null, ageMax: null,
         fee: "", status: "", start: "", end: "", time: "",
-        url: "", img: r.firstimage || "", tel: r.tel || "",
+        url: tourUrl(r.contentid), img: r.firstimage || "", tel: r.tel || "",
         note: "", park: "",
         lat, lng,
       });
@@ -513,7 +524,7 @@ async function collectTour() {
         place: r.addr1 || "",
         target: "", ageMin: null, ageMax: null,
         fee: "", status: "", start, end, time: "",
-        url: "", img: r.firstimage || "", tel: r.tel || "",
+        url: tourUrl(r.contentid), img: r.firstimage || "", tel: r.tel || "",
         note: "", park: "",
         lat, lng,
       });
