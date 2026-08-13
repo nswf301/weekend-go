@@ -205,6 +205,20 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .zone-body .card:last-child{margin-bottom:0}
 @media (prefers-reduced-motion:reduce){.zone > summary .arrow{transition:none}}
 
+/* ── 휴양림 탭 ───────────────────────────────────────────── */
+/* 카드가 아니라 한 줄짜리 목록이다. 96곳이라 촘촘해야 훑기 좋다. */
+.lead{margin:0 0 14px;font-size:16px;color:var(--ink-soft)}
+.city{font-size:14px;font-weight:600;color:var(--ink-faint);margin:14px 0 2px}
+.zone-body > .city:first-child{margin-top:4px}
+.forest{
+  display:block;padding:6px 2px;font-size:16px;
+  color:var(--ink);text-decoration:none;
+  border-bottom:1px solid var(--line);
+}
+.forest:last-child{border-bottom:0}
+.forest:hover{color:var(--accent);text-decoration:underline}
+.forest:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+
 /* ── 결과 요약 ───────────────────────────────────────────── */
 .summary{
   display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
@@ -308,6 +322,7 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-find" aria-controls="panel-find" aria-selected="true">찾기</button>
+    <button class="tab" role="tab" id="tab-forest" aria-controls="panel-forest" aria-selected="false">휴양림</button>
     <button class="tab" role="tab" id="tab-set" aria-controls="panel-set" aria-selected="false">설정</button>
   </div>
 
@@ -355,6 +370,20 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <b>데이터 출처</b><br>
       한국관광공사 관광정보 개방 서비스 · 서울시 공공서비스예약<br>
       매일 한 번 새로 받아옵니다. 실제 잔여 자리는 각 기관 페이지에서 다시 확인하세요.
+    </div>
+  </section>
+
+  <!-- ─────────── 휴양림 ─────────── -->
+  <section class="panel" id="panel-forest" role="tabpanel" aria-labelledby="tab-forest" hidden>
+    <p class="lead">숲나들e에 등록된 자연휴양림입니다. 이름을 누르면 그 휴양림 소개 페이지로 갑니다.
+      수도권·강원·충북·대전충남 네 권역만 담았습니다(전국은 170곳입니다).</p>
+
+    <div id="forestList"></div>
+
+    <div class="foot">
+      <b>데이터 출처</b><br>
+      숲나들e(산림청 자연휴양림 통합예약)<br>
+      빈자리와 요금은 각 휴양림 페이지에서 다시 확인하세요.
     </div>
   </section>
 
@@ -417,6 +446,7 @@ const SAMPLE = [
 /* ── 실제 자료 (data.json) — 없으면 위 샘플로 돈다 ── */
 let DATA = SAMPLE;
 let IS_SAMPLE = true;
+let FORESTS = [];        // 휴양림 탭 목록 (data.json의 forests)
 
 async function loadData(){
   try{
@@ -425,6 +455,7 @@ async function loadData(){
     if(!j.items || !j.items.length) return;
     DATA = j.items;
     IS_SAMPLE = false;
+    if(Array.isArray(j.forests)) FORESTS = j.forests;
     const d = new Date(j.generatedAt);
     document.getElementById("notice").innerHTML =
       `<strong>자료</strong><span>${j.items.length}건 · ${d.getMonth()+1}월 ${d.getDate()}일 기준. `
@@ -712,6 +743,44 @@ function drawCal(){
   cal.querySelector("#calNext").onclick=()=>{ calCursor=new Date(y,m+1,1); drawCal(); };
 }
 
+/* ── 휴양림 목록 ── */
+// 찾기 탭의 지역 묶음(details.zone)과 같은 마크업을 그대로 쓴다.
+// 거르지도 정렬하지도 않고 data.json에 담긴 순서(권역 → 시군 가나다) 그대로 그린다.
+function drawForests(){
+  const box=document.getElementById("forestList");
+  box.innerHTML="";
+
+  const regions=new Map();
+  FORESTS.forEach(f=>{
+    if(!regions.has(f.region)) regions.set(f.region,new Map());
+    const cities=regions.get(f.region);
+    if(!cities.has(f.city)) cities.set(f.city,[]);
+    cities.get(f.city).push(f);
+  });
+
+  let first=true;
+  regions.forEach((cities,regionName)=>{
+    const n=[...cities.values()].reduce((s,a)=>s+a.length,0);
+    const g=document.createElement("details");
+    g.className="zone";
+    if(first){ g.open=true; first=false; }   // 맨 앞(수도권)만 펴둔다
+
+    let inner="";
+    cities.forEach((list,cityName)=>{
+      inner+=`<p class="city">${esc(cityName)}</p>`;
+      list.forEach(f=>{
+        const u=`https://www.foresttrip.go.kr/indvz/main.do?hmpgId=${f.id}`;
+        inner+=`<a class="forest" href="${esc(u)}" target="_blank" rel="noopener">${esc(f.name)}</a>`;
+      });
+    });
+
+    g.innerHTML=`<summary><span><span class="arrow">▸</span> ${esc(regionName)}</span>`
+      + `<span class="n">${n}곳</span></summary>`
+      + `<div class="zone-body">${inner}</div>`;
+    box.appendChild(g);
+  });
+}
+
 /* ── 탭 ── */
 document.querySelectorAll(".tab").forEach(t=>{
   t.onclick=()=>{
@@ -803,5 +872,5 @@ FEES.forEach(name=>{
 drawAreaBox();
 drawCal();
 render();
-loadData().then(()=>{ drawAreaBox(); render(); });
+loadData().then(()=>{ drawAreaBox(); render(); drawForests(); });
 </script>
