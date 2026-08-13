@@ -329,6 +329,18 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
         <div class="checks" id="bandBox"></div>
         <p class="help">고른 나이가 갈 수 있는 것만 보여줍니다. 다 끄면 가리지 않습니다.</p>
       </div>
+
+      <div class="field">
+        <span class="label">어디로</span>
+        <div class="checks" id="areaBox"></div>
+        <p class="help">고른 지역만 보여줍니다. 다 끄면 가리지 않습니다.</p>
+      </div>
+
+      <div class="field">
+        <span class="label">요금</span>
+        <div class="checks" id="feeBox"></div>
+        <p class="help">고른 요금만 보여줍니다. 다 끄면 가리지 않습니다.</p>
+      </div>
     </div>
 
     <div class="summary">
@@ -424,11 +436,34 @@ const state = {
   origin:"노원구",
   dist:100,
   bands:new Set(["유아","초등학생"]),   // 기본으로 켜둘 것
+  areas:new Set(),                     // 지역(시도). 자료를 읽은 뒤 전부 켠다
+  fees:new Set(["무료","유료","요금 미상"]),
   date:null      // null = 이번 주 토요일
 };
 
 // 나이 묶음. 켠 묶음과 겹치는 프로그램만 보여준다
 const BANDS = [["유아",3,6],["초등학생",7,12],["청소년",13,18],["성인",19,99]];
+
+// 요금 묶음
+const FEES = ["무료","유료","요금 미상"];
+// 저장된 지역 선택이 있으면 true. 없으면(예전 저장값 포함) 지역을 전부 켠다
+let areaSaved = false;
+
+// 시도 이름. "경기 고양시" → "경기", 공백이 없으면 서울(구 이름만 들어 있다)
+function sidoOf(i){
+  const a = String(i.area||"");
+  const k = a.indexOf(" ");
+  return k < 0 ? "서울" : a.slice(0,k);
+}
+// 요금 묶음 판정 — 빈 칸은 미상, "무료"나 숫자가 0뿐이면 무료, 나머지는 유료
+function feeOf(i){
+  const f = String(i.fee||"").trim();
+  if(!f) return "요금 미상";
+  if(/무료/.test(f)) return "무료";
+  const nums = f.match(/\d+/g);
+  if(nums && nums.every(n=>Number(n)===0)) return "무료";
+  return "유료";
+}
 
 /* ── 화면에 넣기 전 특수문자 막기 ── */
 const esc = s => String(s).replace(/[&<>"']/g,
@@ -523,8 +558,14 @@ function render(){
   const fitsBand = i => state.bands.size===0 || BANDS.some(([n,a,b]) =>
     state.bands.has(n) && lo(i)<=b && a<=hi(i));
 
+  // 지역·요금도 나이와 같은 규칙. 하나도 안 켜면 다 통과
+  const fitsArea = i => state.areas.size===0 || state.areas.has(sidoOf(i));
+  const fitsFee  = i => state.fees.size===0  || state.fees.has(feeOf(i));
+
   const list=DATA
     .filter(fitsBand)
+    .filter(fitsArea)
+    .filter(fitsFee)
     .filter(i=>activeOn(i,dstr))
     .map(i=>({...i, d:km(o[1],o[2],i.lat,i.lng)}))
     // 설정에 넣은 출발지에서 가까운 순
@@ -682,13 +723,22 @@ ORIGINS.forEach(([n])=>{
 try{
   const saved=JSON.parse(localStorage.getItem("wg_set")||"{}");
   if(saved.origin) state.origin=saved.origin;
+  // 새 항목이 없는 예전 저장값이면 전부 켜진 것으로 본다
+  if(Array.isArray(saved.areas)){ state.areas=new Set(saved.areas); areaSaved=true; }
+  if(Array.isArray(saved.fees))  state.fees =new Set(saved.fees);
 }catch(e){}
+
+function saveSet(){
+  try{ localStorage.setItem("wg_set",JSON.stringify({
+    origin:state.origin, areas:[...state.areas], fees:[...state.fees]
+  })); }catch(e){}
+}
 
 originSel.value=state.origin;
 
 document.getElementById("saveBtn").onclick=()=>{
   state.origin=originSel.value;
-  try{ localStorage.setItem("wg_set",JSON.stringify({origin:state.origin})); }catch(e){}
+  saveSet();
   const m=document.getElementById("savedMsg");
   m.hidden=false; setTimeout(()=>m.hidden=true,2000);
   render();
@@ -705,7 +755,43 @@ BANDS.forEach(([name,a,b])=>{
   };
   bandBox.appendChild(l);
 });
+
+// 지역 목록은 코드에 박지 않고 자료에서 뽑는다(자료가 바뀌면 따라 바뀐다)
+function drawAreaBox(){
+  const cnt={};
+  DATA.forEach(i=>{ const s=sidoOf(i); cnt[s]=(cnt[s]||0)+1; });
+  const list=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  if(!areaSaved) list.forEach(([n])=>state.areas.add(n));   // 처음엔 전부 켜짐
+  const box=document.getElementById("areaBox");
+  box.innerHTML="";
+  list.forEach(([n,c])=>{
+    const l=document.createElement("label");
+    l.className="check";
+    l.innerHTML=`<input type="checkbox" ${state.areas.has(n)?"checked":""}> ${esc(n)} `
+      + `<span style="color:var(--ink-faint)">${c}</span>`;
+    l.querySelector("input").onchange=e=>{
+      if(e.target.checked) state.areas.add(n); else state.areas.delete(n);
+      areaSaved=true;
+      saveSet(); render();
+    };
+    box.appendChild(l);
+  });
+}
+
+const feeBox=document.getElementById("feeBox");
+FEES.forEach(name=>{
+  const l=document.createElement("label");
+  l.className="check";
+  l.innerHTML=`<input type="checkbox" ${state.fees.has(name)?"checked":""}> ${name}`;
+  l.querySelector("input").onchange=e=>{
+    if(e.target.checked) state.fees.add(name); else state.fees.delete(name);
+    saveSet(); render();
+  };
+  feeBox.appendChild(l);
+});
+
+drawAreaBox();
 drawCal();
 render();
-loadData().then(render);
+loadData().then(()=>{ drawAreaBox(); render(); });
 </script>
