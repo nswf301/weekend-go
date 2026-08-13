@@ -394,16 +394,13 @@ const TOUR_CULTURE_CAT = {
   A02060100: "박물관", A02060200: "기념관", A02060300: "전시관", A02060500: "미술관/화랑",
 };
 
-/* TourAPI 응답에는 홈페이지가 없지만 contentid가 있다.
- * 그 번호로 대한민국구석구석 공식 소개 페이지 주소를 만든다
- * (사진·설명·이용시간·주차·문의처가 다 있는 페이지).
- * 번호가 없으면 억지로 만들지 않고 빈 값을 준다.
+/* ⚠️ 대한민국구석구석 주소를 contentid로 만들려다 실패했다. 다시 시도하지 말 것.
+ *   https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=<contentid>
+ * 구석구석의 cotid는 TourAPI의 contentid와 **다른 번호 체계**라, 숫자를 그대로 넣으면
+ * "요청하신 페이지를 찾을 수 없거나 비정상적인 접근입니다" 화면이 뜬다.
+ * 그 오류 화면도 HTTP 200으로 응답하기 때문에 상태 코드만 봐서는 성공처럼 보인다.
+ * 진짜 홈페이지가 필요하면 detailCommon2를 건별로 불러야 한다(항목당 1회 호출).
  */
-function tourUrl(contentid) {
-  const id = String(contentid ?? "").trim();
-  if (!id) return "";
-  return `https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=${id}`;
-}
 
 async function collectTour() {
   // 표준데이터와 같은 키를 쓴다. Encoding 키(%가 섞인 것)는 그대로 둔다.
@@ -472,7 +469,7 @@ async function collectTour() {
         place: r.addr1 || "",
         target: "", ageMin: null, ageMax: null,
         fee: "", status: "", start: "", end: "", time: "",
-        url: tourUrl(r.contentid), img: r.firstimage || "", tel: r.tel || "",
+        url: "", img: r.firstimage || "", tel: r.tel || "",
         note: "", park: "",
         lat, lng,
       });
@@ -498,7 +495,7 @@ async function collectTour() {
         place: r.addr1 || "",
         target: "", ageMin: null, ageMax: null,
         fee: "", status: "", start: "", end: "", time: "",
-        url: tourUrl(r.contentid), img: r.firstimage || "", tel: r.tel || "",
+        url: "", img: r.firstimage || "", tel: r.tel || "",
         note: "", park: "",
         lat, lng,
       });
@@ -524,7 +521,7 @@ async function collectTour() {
         place: r.addr1 || "",
         target: "", ageMin: null, ageMax: null,
         fee: "", status: "", start, end, time: "",
-        url: tourUrl(r.contentid), img: r.firstimage || "", tel: r.tel || "",
+        url: "", img: r.firstimage || "", tel: r.tel || "",
         note: "", park: "",
         lat, lng,
       });
