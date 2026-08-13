@@ -281,10 +281,14 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 }
 .foot b{color:var(--ink-soft);font-weight:600}
 
-@media (max-width:420px){
+/* 휴대폰에서는 사진을 옆이 아니라 위로 올려 한 줄을 통째로 쓴다.
+ * 나란히 두면 글씨 쪽이 너무 좁아 제목이 네댓 줄로 접히고, 정사각형으로 잘린
+ * 사진은 좌우가 날아가 포스터 글씨가 안 읽힌다.
+ * 기준을 420px에서 600px로 올린 건 요즘 큰 휴대폰이 430px쯤 되기 때문이다. */
+@media (max-width:600px){
   .card{gap:12px;padding:12px}
-  .card.has-img{grid-template-columns:120px 1fr}
-  .thumb{width:120px;height:120px}
+  .card.has-img{grid-template-columns:1fr}
+  .thumb{width:100%;height:auto;aspect-ratio:16/10}
 }
 </style>
 
