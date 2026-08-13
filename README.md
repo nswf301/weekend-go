@@ -134,14 +134,27 @@ git push
 https://www.foresttrip.go.kr/indvz/main.do?hmpgId=<ID>
 ```
 
-**목록을 어디서 받았나** — 숲나들e 휴양림 검색 API를 브라우저에서 불러 받았다.
+**목록을 어디서 받았나** — 숲나들e 휴양림 검색 목록을 세 단계로 받았다. 세션 쿠키와
+CSRF 토큰이 있어야 해서 주소만 안다고 바로 되지는 않는다.
 
-```
-POST https://www.foresttrip.go.kr/indvz/selectInsttListForSearch.do
-권역 코드 1~4 (수도권·강원·충북·대전충남) 를 네 번 불러 합쳤다 — 96곳
+```bash
+# 1) 검색 화면을 쿠키와 함께 받아 CSRF 토큰을 뽑는다
+curl -s -c ck.txt -A "Mozilla/5.0" \
+  "https://www.foresttrip.go.kr/pot/is/fs/selectFcltSrchView.do?hmpgId=FRIP&menuId=002001" -o ft.html
+TOKEN=$(grep -oE '_csrf=[0-9a-f-]{36}' ft.html | head -1 | cut -d= -f2)
+
+# 2) 같은 세션으로 권역별 목록을 받는다 (GET, X-Ajax-call 헤더가 필요하다)
+curl -s -b ck.txt -A "Mozilla/5.0" -H "X-Ajax-call: true" \
+  "https://www.foresttrip.go.kr/rep/or/selectInsttListForSearch.do?_csrf=$TOKEN&srchSido=1"
 ```
 
-받은 날은 2026-08-13. 결과인 `[이름, ID]` 96쌍을 `collect.js`의 `FOREST` 상수에 박아뒀다.
+- 권역 코드는 `/rep/or/selectSiDoList.do` 로 얻는다 — **1** 서울·인천·경기, **2** 강원,
+  **3** 충북, **4** 대전·충남 (5 전북, 6 전남광주 등은 반경 밖이라 안 받았다)
+- `srchSido`를 비우면 빈 목록이 온다. 반드시 권역을 지정해야 한다
+- 응답 `insttList[]`에서 쓸 것은 `insttNm`(이름)과 `insttId`(ID) 둘뿐이다.
+  나머지 80여 개 칸(`cvncFcl` 편의시설 등)은 **목록 조회에서는 전부 비어 있다**
+
+네 권역을 합쳐 96곳. 받은 날은 2026-08-13. 결과인 `[이름, ID]` 96쌍을 `collect.js`의 `FOREST` 상수에 박아뒀다.
 **수집기에서 매번 부르지 않는다** — CSRF 토큰과 세션이 필요해 수집기가 복잡해지는 데다,
 휴양림 목록 자체는 자주 바뀌지 않는다. 갱신이 필요하면 위 주소를 브라우저에서 다시 불러
 받은 목록을 `FOREST`에 덮어쓰면 된다.
