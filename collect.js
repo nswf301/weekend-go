@@ -614,10 +614,14 @@ const MANUAL = [
   {
     kind: "manual",
     group: "직접 확인",
-    title: "남양주시 체험관광 예약",
-    area: "남양주시",
-    note: "로그인해야 목록이 보입니다",
-    url: "https://www.nyj.go.kr/reserve/selectExprnMyTourListU.do?key=4249",
+    title: "남양주시 체험·견학 프로그램 예약",
+    // 지역 이름은 다른 자료와 같은 꼴이라야 한다. "남양주시"처럼 적으면
+    // 공백이 없어 화면의 지역 필터가 서울로 분류해버린다.
+    area: "경기 남양주시",
+    note: "물맑음수목원 등. 목록은 로그인 없이 볼 수 있고, 신청할 때만 로그인한다",
+    // 예전에는 selectExprnMyTourListU.do(내 예약 조회)를 걸어둬서 로그인해야 보였다.
+    // 아래가 프로그램 목록 페이지다.
+    url: "https://www.nyj.go.kr/reserve/selectUserExprnTourBasicInfoList.do?key=3383",
     lat: 37.636, lng: 127.216,
   },
 ];
