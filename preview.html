@@ -1,6 +1,20 @@
 <title>주말 어디 가지</title>
 
 <style>
+/* ── 글꼴: Paperlogy (눈누 CDN) ────────────────────────────
+ * 굵기 9종을 다 선언해두지만, 브라우저는 화면에서 실제로 쓰는 굵기만 내려받는다.
+ * font-display:swap 이라 글꼴이 늦게 와도 글자는 먼저 보인다.
+ */
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-1Thin.woff2') format('woff2');font-weight:100;font-display:swap}
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-2ExtraLight.woff2') format('woff2');font-weight:200;font-display:swap}
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');font-weight:900;font-display:swap}
+
 /* ── 팔레트: PostHog 계열 크림 바탕 + 주황 ─────────────────
  * 색값은 md 문서가 아니라 실제 posthog.com에서 뜯어온 것이다.
  * 문서는 노랑(#F7A501)을 대표색이라 했지만 실물은 주황(#F54E00)을 더 많이 쓴다.
@@ -71,7 +85,7 @@ body{
   margin:0;
   background:var(--paper);
   color:var(--ink);
-  font-family:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,
+  font-family:"Paperozi","Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,
               "Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
   font-size:16px;
   line-height:1.6;
