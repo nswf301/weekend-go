@@ -1,2 +1,7 @@
 keys.json
 node_modules/
+
+# 디자인 비교용 임시 미리보기 (채택된 것은 index.html에 반영했다)
+preview-airbnb.html
+preview-posthog.html
+preview-posthog2.html

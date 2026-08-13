@@ -1,62 +1,68 @@
 <title>주말 어디 가지</title>
 
 <style>
-/* ── 팔레트: 이정표(도로표지) 계열 딥 틸 + 청록기 도는 중성색 ───────── */
+/* ── 팔레트: PostHog 계열 크림 바탕 + 주황 ─────────────────
+ * 색값은 md 문서가 아니라 실제 posthog.com에서 뜯어온 것이다.
+ * 문서는 노랑(#F7A501)을 대표색이라 했지만 실물은 주황(#F54E00)을 더 많이 쓴다.
+ * 그림자를 거의 안 쓰고 1px 테두리로 카드를 구분하는 것도 실물에서 확인했다.
+ */
 :root{
-  --paper:#F1F5F3;
-  --surface:#FFFFFF;
-  --surface-2:#F7FAF9;
-  --ink:#14201E;
-  --ink-soft:#5A6B67;
-  --ink-faint:#8A9A96;
-  --line:#DBE4E1;
-  --line-strong:#C3D0CC;
-  --accent:#146B58;
-  --accent-ink:#0C463A;
-  --accent-soft:#E1EFEA;
-  --warn:#A9501E;
-  --warn-soft:#FAE9DD;
-  --shadow:0 1px 2px rgba(20,32,30,.06), 0 6px 18px rgba(20,32,30,.05);
-  --sun:#C0392B;
-  --sat:#2C6FBB;
+  --paper:#EEEFE9;          /* 크림 바탕 — 이 브랜드에서 가장 눈에 띄는 선택 */
+  --surface:#FFFFFF;        /* 크림 위에 놓이는 흰 카드 */
+  --surface-2:#E5E7E0;
+  --ink:#1E1F23;
+  --ink-soft:#5F6058;
+  --ink-faint:#8D8D8D;
+  --line:#BFC1B7;
+  --line-strong:#A8AA9E;
+  --accent:#F54E00;         /* 주황 — 글자로도 쓰이므로 이 자리는 읽히는 색이라야 한다 */
+  --accent-ink:#C43E00;
+  --accent-soft:#FDEBE2;
+  --warn:#CD4239;
+  --warn-soft:#F7D6D3;
+  --shadow:0 0 0 1px rgba(35,37,29,.10);   /* 그림자 대신 테두리 한 겹 */
+  --sun:#CD4239;
+  --sat:#0079FF;
 }
+/* PostHog은 공개 웹이 크림 바탕뿐이라 다크는 없다.
+   그래서 실물의 코드블록 색(#1E1F23)을 바탕 삼아 직접 짰다. */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --paper:#0E1413;
-    --surface:#161F1D;
-    --surface-2:#1B2523;
-    --ink:#E7EEEC;
-    --ink-soft:#95A6A2;
-    --ink-faint:#6D7E7A;
-    --line:#26322F;
-    --line-strong:#33423E;
-    --accent:#4FBFA1;
-    --accent-ink:#8FD9C4;
-    --accent-soft:#153029;
-    --warn:#E09A62;
-    --warn-soft:#33220F;
-    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
-    --sun:#E8776B;
-    --sat:#77A9E0;
+    --paper:#08080A;
+    --surface:#1E1F23;
+    --surface-2:#232429;
+    --ink:#EEEFE9;
+    --ink-soft:#B6B7AF;
+    --ink-faint:#8D8D8D;
+    --line:#33343A;
+    --line-strong:#4A4B52;
+    --accent:#FF7A45;       /* 어두운 바탕에서는 주황을 밝혀야 읽힌다 */
+    --accent-ink:#FFA079;
+    --accent-soft:#3A1D12;
+    --warn:#E8695F;
+    --warn-soft:#3A1A17;
+    --shadow:0 0 0 1px rgba(255,255,255,.08);
+    --sun:#E8695F;
+    --sat:#5AA9FF;
   }
 }
 :root[data-theme="dark"]{
-  --paper:#0E1413;
-  --surface:#161F1D;
-  --surface-2:#1B2523;
-  --ink:#E7EEEC;
-  --ink-soft:#95A6A2;
-  --ink-faint:#6D7E7A;
-  --line:#26322F;
-  --line-strong:#33423E;
-  --accent:#4FBFA1;
-  --accent-ink:#8FD9C4;
-  --accent-soft:#153029;
-  --warn:#E09A62;
-  --warn-soft:#33220F;
-  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
-  --sun:#E8776B;
-  --sat:#77A9E0;
+  --paper:#08080A;
+  --surface:#1E1F23;
+  --surface-2:#232429;
+  --ink:#EEEFE9;
+  --ink-soft:#B6B7AF;
+  --ink-faint:#8D8D8D;
+  --line:#33343A;
+  --line-strong:#4A4B52;
+  --accent:#FF7A45;
+  --accent-ink:#FFA079;
+  --accent-soft:#3A1D12;
+  --warn:#E8695F;
+  --warn-soft:#3A1A17;
+  --shadow:0 0 0 1px rgba(255,255,255,.08);
+  --sun:#E8695F;
+  --sat:#5AA9FF;
 }
 
 *{box-sizing:border-box}
@@ -104,7 +110,7 @@ body{
 /* ── 필터 ───────────────────────────────────────────────── */
 .panelbox{
   background:var(--surface);border:1px solid var(--line);
-  border-radius:10px;padding:16px;box-shadow:var(--shadow);
+  border-radius:4px;padding:16px;box-shadow:var(--shadow);
 }
 .field{display:flex;flex-direction:column;gap:8px}
 .field + .field{margin-top:16px}
@@ -115,7 +121,7 @@ body{
 select,input[type="date"],input[type="text"]{
   font:inherit;font-size:16px;color:var(--ink);
   background:var(--surface-2);border:1px solid var(--line-strong);
-  border-radius:8px;padding:10px 12px;width:100%;
+  border-radius:4px;padding:10px 12px;width:100%;
 }
 select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 
@@ -124,12 +130,12 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .checks{display:flex;flex-wrap:wrap;gap:10px 18px}
 
 /* ── 달력 ───────────────────────────────────────────────── */
-.cal{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface-2)}
+.cal{border:1px solid var(--line);border-radius:4px;padding:10px;background:var(--surface-2)}
 .cal-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 10px}
 .cal-title{font-size:16px;font-weight:700;letter-spacing:-.01em}
 .cal-nav{
   appearance:none;background:var(--surface);color:var(--ink);
-  border:1px solid var(--line-strong);border-radius:8px;
+  border:1px solid var(--line-strong);border-radius:4px;
   width:36px;height:36px;font:inherit;font-size:16px;cursor:pointer;line-height:1;
 }
 .cal-nav:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -138,16 +144,14 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .cal-dow.s0{color:var(--sun)} .cal-dow.s6{color:var(--sat)}
 .cal-day{
   appearance:none;background:none;border:0;font:inherit;font-size:16px;
-  color:var(--ink);aspect-ratio:1;border-radius:8px;cursor:pointer;
+  color:var(--ink);aspect-ratio:1;border-radius:4px;cursor:pointer;
   font-variant-numeric:tabular-nums;
 }
 .cal-day:hover{background:var(--accent-soft)}
 .cal-day.s0{color:var(--sun)} .cal-day.s6{color:var(--sat)}
 .cal-day.out{opacity:.35}
 .cal-day.today{box-shadow:inset 0 0 0 1px var(--line-strong)}
-.cal-day.on{background:var(--accent);color:#fff;font-weight:700;box-shadow:none}
-:root[data-theme="dark"] .cal-day.on,
-:root:not([data-theme="light"]) .cal-day.on{color:#0E1413}
+.cal-day.on{background:#F7A501;color:#1E1F23;font-weight:700;box-shadow:none}
 .cal-day:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
 /* ── 섹션 (행사·예약·상시) ──────────────────────────────── */
@@ -160,14 +164,14 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .group-head .n{font-size:14px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
 
 /* ── 지역 묶음 (접었다 펴기) ─────────────────────────────── */
-.zone{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:8px}
+.zone{border:1px solid var(--line);border-radius:4px;background:var(--surface);margin-bottom:8px}
 .zone > summary{
   list-style:none;cursor:pointer;padding:14px;
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   font-size:16px;font-weight:700;
 }
 .zone > summary::-webkit-details-marker{display:none}
-.zone > summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:10px}
+.zone > summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
 .zone > summary .n{font-size:16px;font-weight:400;color:var(--ink-soft)}
 .zone > summary .arrow{color:var(--ink-faint);transition:transform .15s}
 .zone[open] > summary .arrow{transform:rotate(90deg)}
@@ -192,13 +196,13 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .card{
   display:grid;grid-template-columns:1fr;gap:14px;
   background:var(--surface);border:1px solid var(--line);
-  border-radius:10px;padding:14px;margin-bottom:8px;
+  border-radius:4px;padding:14px;margin-bottom:8px;
   box-shadow:var(--shadow);
 }
 .card.has-img{grid-template-columns:152px 1fr}
 .thumb{
   width:152px;height:152px;align-self:start;
-  border-radius:8px;object-fit:cover;
+  border-radius:4px;object-fit:cover;
   background:var(--surface-2);border:1px solid var(--line);
 }
 .body{display:flex;flex-direction:column;gap:5px;min-width:0}
@@ -232,18 +236,23 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
 .empty{
   text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:16px;
-  background:var(--surface);border:1px dashed var(--line-strong);border-radius:10px;
+  background:var(--surface);border:1px dashed var(--line-strong);border-radius:4px;
 }
 
 /* ── 설정 ───────────────────────────────────────────────── */
 .help{font-size:14px;color:var(--ink-soft);margin:0}
+/* PostHog식 입체 버튼 — 아래로 밀린 단색 그림자가 버튼 두께처럼 보이고,
+ * 누르면 그만큼 내려앉아 그림자가 사라진다.
+ * 노랑은 바탕으로만 쓰고 글자는 먹색이라야 읽힌다(흰 글자는 대비가 모자란다). */
 .btn{
   appearance:none;font:inherit;font-size:16px;font-weight:600;
-  background:var(--accent);color:#fff;border:0;border-radius:8px;
+  background:#F7A501;color:#1E1F23;border:0;border-radius:6px;
   padding:12px 20px;cursor:pointer;margin-top:18px;
+  box-shadow:0 3px 0 #B17816;
+  transition:transform .06s ease, box-shadow .06s ease;
 }
-:root[data-theme="dark"] .btn,
-:root:not([data-theme="light"]) .btn{color:#0E1413}
+.btn:hover{background:#FFB524}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 #B17816}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .saved{font-size:14px;color:var(--accent);margin-left:10px}
 
