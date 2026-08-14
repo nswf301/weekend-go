@@ -787,7 +787,7 @@ async function collectSigun() {
     try {
       const mod = require(path.join(dir, f));
       const rows = await mod.collect(SIGUN_UTIL);
-      const list = Array.isArray(rows) ? rows : [];
+      const list = (Array.isArray(rows) ? rows : []).filter(soloOK);
       console.log(`  ${mod.name || f} 접수중 ${list.length}건`);
       out.push(...list);
     } catch (e) {
@@ -795,6 +795,17 @@ async function collectSigun() {
     }
   }
   return out;
+}
+
+/* 단체 전용은 버린다. 서울 예약에 쓰는 것과 같은 기준이라 여기 한 곳에 두고
+ * 모든 시군에 일괄로 건다 — 시군 파일마다 같은 규칙을 베끼면 나중에 어긋난다.
+ * "개인/단체"나 "단체는 전화문의"처럼 개인도 되는 것, 대상 칸에 "가족"이 있는 것은 남긴다. */
+function soloOK(it) {
+  const tgt = it.target || "";
+  const both = `${it.title || ""} ${tgt}`;
+  if (!/단체|학급/.test(both)) return true;
+  if (/개인|누구나|단체는|단체문의|단체 문의/.test(both)) return true;
+  return /가족/.test(tgt);
 }
 
 /* ── 직접 확인이 필요한 곳 (자동 수집이 안 되는 예약처) ────── */
