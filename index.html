@@ -203,6 +203,12 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .zone-body{padding:0 10px 10px}
 .zone-body .card{margin-bottom:8px}
 .zone-body .card:last-child{margin-bottom:0}
+/* 권역 안의 시군구 소제목 — 접지 않고 자리만 알려준다 */
+.sub-area{
+  font-size:16px;font-weight:700;color:var(--ink-soft);
+  padding:10px 4px 6px;
+}
+.sub-area span{font-weight:400;color:var(--ink-faint);font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.zone > summary .arrow{transition:none}}
 
 /* ── 휴양림 탭 ───────────────────────────────────────────── */
@@ -487,6 +493,22 @@ function sidoOf(i){
   const k = a.indexOf(" ");
   return k < 0 ? "서울" : a.slice(0,k);
 }
+
+// 권역. 위쪽 체크와 아래 목록 묶음을 같은 단위로 쓴다.
+// 자료가 서울에서 100km 안이라 전라·제주는 실제로 잘 안 들어온다.
+// 없는 권역은 체크에도 목록에도 나타나지 않는다(자료에서 뽑아 만들기 때문).
+const ZONE_OF = {
+  서울:"서울",
+  경기:"경기·인천", 인천:"경기·인천",
+  강원:"강원",
+  충북:"충청권", 충남:"충청권", 대전:"충청권", 세종:"충청권",
+  전북:"전라권", 전남:"전라권", 광주:"전라권",
+  경북:"경상권", 경남:"경상권", 대구:"경상권", 부산:"경상권", 울산:"경상권",
+  제주:"제주"
+};
+const ZONE_ORDER = ["서울","경기·인천","강원","충청권","전라권","경상권","제주","그 밖"];
+function zoneOf(i){ return ZONE_OF[sidoOf(i)] || "그 밖"; }
+
 // 요금 묶음 판정 — 빈 칸은 미상, "무료"나 숫자가 0뿐이면 무료, 나머지는 유료
 function feeOf(i){
   const f = String(i.fee||"").trim();
@@ -591,7 +613,7 @@ function render(){
     state.bands.has(n) && lo(i)<=b && a<=hi(i));
 
   // 지역·요금도 나이와 같은 규칙. 하나도 안 켜면 다 통과
-  const fitsArea = i => state.areas.size===0 || state.areas.has(sidoOf(i));
+  const fitsArea = i => state.areas.size===0 || state.areas.has(zoneOf(i));
   const fitsFee  = i => state.fees.size===0  || state.fees.has(feeOf(i));
 
   const list=DATA
@@ -630,23 +652,35 @@ function render(){
     sec.innerHTML=`<summary class="group-head"><h2><span class="arrow">▸</span> ${secName}</h2>`
       + `<span class="n">${inSec.length}곳</span></summary>`;
 
-    // 섹션 안에서 다시 지역별로 묶는다. 가까운 순이라 지역 순서도 가까운 순
+    // 섹션 안에서 권역으로 묶고, 그 안을 다시 시군구로 나눈다.
+    // 접는 것은 권역까지만 — 시군구까지 접으면 누를 것이 100개가 넘는다.
+    // 가까운 순으로 들어오므로 권역·시군구 순서도 저절로 가까운 순이 된다.
     const zones = new Map();
     inSec.forEach(i => {
+      const z = zoneOf(i);
+      if(!zones.has(z)) zones.set(z, new Map());
+      const areas = zones.get(z);
       const k = i.area || "기타";
-      if(!zones.has(k)) zones.set(k, []);
-      zones.get(k).push(i);
+      if(!areas.has(k)) areas.set(k, []);
+      areas.get(k).push(i);
     });
 
     let first = true;
-    zones.forEach((items, zoneName)=>{
+    zones.forEach((areas, zoneName)=>{
+    const total = [...areas.values()].reduce((s,v)=>s+v.length, 0);
     const g=document.createElement("details");
     g.className="zone";
-    if(first){ g.open = true; first = false; }   // 섹션마다 가장 가까운 지역만 펴둔다
+    if(first){ g.open = true; first = false; }   // 섹션마다 가장 가까운 권역만 펴둔다
     g.innerHTML=`<summary><span><span class="arrow">▸</span> ${esc(zoneName)}</span>`
-      + `<span class="n">${items.length}곳</span></summary>`
+      + `<span class="n">${total}곳</span></summary>`
       + `<div class="zone-body"></div>`;
     const body=g.querySelector(".zone-body");
+
+    areas.forEach((items, areaName)=>{
+    const head=document.createElement("div");
+    head.className="sub-area";
+    head.innerHTML=`${esc(areaName)} <span>${items.length}곳</span>`;
+    body.appendChild(head);
 
     items.forEach(i=>{
       let when="";
@@ -694,6 +728,7 @@ function render(){
           </div>
         </div>`;
       body.appendChild(card);
+    });
     });
       sec.appendChild(g);
     });
@@ -835,11 +870,20 @@ BANDS.forEach(([name,a,b])=>{
   bandBox.appendChild(l);
 });
 
-// 지역 목록은 코드에 박지 않고 자료에서 뽑는다(자료가 바뀌면 따라 바뀐다)
+// 권역 여섯은 자료가 없어도 0으로 늘 보여준다 — 자리가 고정돼 있어야
+// 어디가 비었는지 알 수 있다. 제주·그 밖은 자료가 있을 때만 붙인다.
+const ZONE_ALWAYS = ["서울","경기·인천","강원","충청권","전라권","경상권"];
+
 function drawAreaBox(){
   const cnt={};
-  DATA.forEach(i=>{ const s=sidoOf(i); cnt[s]=(cnt[s]||0)+1; });
-  const list=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  DATA.forEach(i=>{ const s=zoneOf(i); cnt[s]=(cnt[s]||0)+1; });
+  const extra=Object.keys(cnt).filter(n=>!ZONE_ALWAYS.includes(n))
+    .sort((a,b)=>ZONE_ORDER.indexOf(a)-ZONE_ORDER.indexOf(b));
+  const list=[...ZONE_ALWAYS, ...extra].map(n=>[n, cnt[n]||0]);
+
+  // 예전에는 시도(충북·충남)로 저장했다. 그 값이 남아 있으면 권역 이름과
+  // 하나도 안 맞아 목록이 통째로 비어 버린다 — 그럴 땐 저장값을 버리고 전부 켠다.
+  if(areaSaved && !list.some(([n])=>state.areas.has(n))){ state.areas.clear(); areaSaved=false; }
   if(!areaSaved) list.forEach(([n])=>state.areas.add(n));   // 처음엔 전부 켜짐
   const box=document.getElementById("areaBox");
   box.innerHTML="";
