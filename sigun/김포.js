@@ -75,8 +75,11 @@ module.exports = {
         const title = strip((c.match(/<strong>([\s\S]*?)<\/strong>/) || [])[1] || "");
         if (!title) continue;
 
+        // 목록의 링크에는 rep=1이 빠져 있다. 그대로 열면 김포시 서버가
+        // "처리중 예외상황이 발생하였습니다" 안내창만 띄우고 끝난다. 붙여줘야 열린다.
         const href = (c.match(/href="([^"]+)"/) || [])[1] || "";
-        const url  = href ? BASE + util.unent(href).replace(/^\.\//, "") : "";
+        let url = href ? BASE + util.unent(href).replace(/^\.\//, "") : "";
+        if (url && !/[?&]rep=/.test(url)) url += "&rep=1";
 
         // 사진은 participation_image 칸 안에만 있다. src가 /로 시작하는 상대 주소다.
         const imgBox = (c.match(/<div class="participation_image">([\s\S]*?)<\/div>/) || [])[1] || "";
