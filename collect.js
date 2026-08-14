@@ -852,12 +852,33 @@ const MANUAL = [];
   // 국립대(서울과학기술대학교미술관)는 종류가 '대학'이 아니라 '국립'으로 온다.
   const isUniv = (it) => /대학교/.test(it.title || "");
 
+  // 그림을 파는 상업 화랑은 나들이가 아니다. 이름에 '화랑'이 든 곳과, 분류가
+  // 미술관으로 와 있지만 실제로는 화랑인 다섯 곳을 뺀다(사용자가 골랐다).
+  // 미술관은 남긴다 — 국립현대미술관·간송미술관·어린이미술관이 같은 분류에 있다.
+  const GALLERY = [
+    "금보성아트센터", "아트파크", "어반아트", "유 아트 스페이스", "조은숙아트앤라이프스타일",
+  ];
+  // 전시관 분류에 섞여 있는 작가 작업실·기획전시장(위 화랑과 성격이 같다)과
+  // 상업 공간. 사용자가 목록을 보고 골랐다.
+  const STUDIO_SHOP = [
+    "서울시립 난지미술창작스튜디오", "플랫폼엘", "수애뇨339", "TINC",
+    "틈문화창작지대", "아트플러그 연수", "CXC아트뮤지엄",
+    "빛의 시어터", "더서울라이티움", "에스팩토리", "마크트할레",
+    "현대 모터스튜디오 고양", "전통주갤러리", "창희보석예술관",
+  ];
+
+  const isGallery = (it) => {
+    const t = String(it.title || "").trim();
+    return /화랑/.test(t) || GALLERY.includes(t) || STUDIO_SHOP.includes(t);
+  };
+
   const seen = new Set();
   const merged = [];
-  let dropped = 0, univ = 0;
+  let dropped = 0, univ = 0, gallery = 0;
   for (const list of [tour, std, std2]) {
     for (const it of list) {
       if (isUniv(it)) { univ++; continue; }
+      if (isGallery(it)) { gallery++; continue; }
       const k = normName(it.title);
       if (k) {
         if (seen.has(k)) { dropped++; continue; }
@@ -866,7 +887,7 @@ const MANUAL = [];
       merged.push(it);
     }
   }
-  console.log(`  이름 겹쳐 뺀 것 ${dropped}건 / 대학 시설로 뺀 것 ${univ}건`);
+  console.log(`  이름 겹쳐 뺀 것 ${dropped}건 / 대학 시설 ${univ}건 / 화랑·작업실·상업공간 ${gallery}건`);
 
   // 빈 칸을 빼고 좌표 자릿수를 줄여 파일을 가볍게 만든다
   const items = [...merged, ...seoul, ...sigun, ...MANUAL].map((it) => {
