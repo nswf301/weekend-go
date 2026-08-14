@@ -599,6 +599,10 @@ async function collectStandard2() {
       }
 
       for (const r of items) {
+        // 구분이 그냥 '관광지'인 것은 뺀다 — 사진도 홈페이지도 없고 제목이
+        // 행정 명칭('수동관광지')이라 무엇인지 알 수 없다는 사용자 판단.
+        if (pick(r, "trrsrtSe") === "관광지") continue;
+
         const lat = num(pick(r, "latitude"));
         const lng = num(pick(r, "longitude"));
         if (!inBox(lat, lng)) continue;
@@ -826,7 +830,10 @@ const MANUAL = [];
   const seoul = await collectSeoul().catch((e) => { console.error("서울 실패:", e.message); return []; });
   const std   = await collectStandard().catch((e) => { console.error("표준데이터 실패:", e.message); return []; });
   const tour  = await collectTour().catch((e) => { console.error("TourAPI 실패:", e.message); return []; });
-  const std2  = await collectStandard2().catch((e) => { console.error("표준데이터 추가 실패:", e.message); return []; });
+  // 전국관광지정보(4번)는 껐다 — 사진도 홈페이지도 없고 제목이 행정 명칭이라
+  // 무엇인지 알 수 없다는 사용자 판단. 되살리려면 아래 한 줄을 되돌리면 된다.
+  // const std2 = await collectStandard2().catch((e) => { console.error("표준데이터 추가 실패:", e.message); return []; });
+  const std2  = [];
   const sigun = await collectSigun().catch((e) => { console.error("경기 시군 실패:", e.message); return []; });
 
   if (PEEK) { console.log("\n칸 이름 확인만 하고 끝냅니다."); return; }
@@ -841,11 +848,16 @@ const MANUAL = [];
     .replace(/[\s·\-_,.]/g, "")
     .toLowerCase();
 
+  // 대학 부속 시설은 이름으로 뺀다. 시설 종류 칸으로는 못 거른다 —
+  // 국립대(서울과학기술대학교미술관)는 종류가 '대학'이 아니라 '국립'으로 온다.
+  const isUniv = (it) => /대학교/.test(it.title || "");
+
   const seen = new Set();
   const merged = [];
-  let dropped = 0;
+  let dropped = 0, univ = 0;
   for (const list of [tour, std, std2]) {
     for (const it of list) {
+      if (isUniv(it)) { univ++; continue; }
       const k = normName(it.title);
       if (k) {
         if (seen.has(k)) { dropped++; continue; }
@@ -854,7 +866,7 @@ const MANUAL = [];
       merged.push(it);
     }
   }
-  console.log(`  이름 겹쳐 뺀 것 ${dropped}건`);
+  console.log(`  이름 겹쳐 뺀 것 ${dropped}건 / 대학 시설로 뺀 것 ${univ}건`);
 
   // 빈 칸을 빼고 좌표 자릿수를 줄여 파일을 가볍게 만든다
   const items = [...merged, ...seoul, ...sigun, ...MANUAL].map((it) => {
