@@ -9,13 +9,14 @@
 index.html          화면 (data.json을 읽는다)
 collect.js          자료 수집기 — 거르는 규칙이 전부 여기 있다
 sigun/              경기도 시군 예약 (시군 하나에 파일 하나, 지침.md 참고)
-data.json           수집 결과 (2,478건 + 휴양림 96곳)
-preview.html        collect + index를 합친 미리보기 (자료가 페이지에 박혀 있음)
+data.json           수집 결과 (1,507건 + 휴양림 96곳)
 keys.json           인증키 (.gitignore에 있음, 절대 커밋 금지)
 keys.example.json   키 넣는 자리 견본
 ```
 
-미리보기 만드는 법 — `index.html`의 `<script>` 앞에 `window.__DATA__`로 data.json을 끼워 넣는다.
+미리보기가 필요하면 — `index.html`의 `<script>` 앞에 `window.__DATA__`로 data.json을
+끼워 넣어 임시 파일을 만들고, 보고 나면 지운다. 자료가 박힌 사본을 남겨두면 data.json을
+고쳐도 안 바뀌어 헷갈린다(예전에 1MB짜리 옛 사본이 남아 있었다).
 
 ## 배포 (다모인 앱들과 완전히 별개다)
 
