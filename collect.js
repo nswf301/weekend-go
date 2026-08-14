@@ -882,6 +882,119 @@ async function collectNamyangju() {
   return out;
 }
 
+/* ── 6. 경기도 시군 예약 — 김포시 견학·체험 ───────────────────
+ * 남양주와 같은 스키마로 맞추지만 화면 구조가 다르다. 김포는 표(table)가 아니라
+ * 목록(ul/li)이고, 항목 하나가 <li class="participation_item">로 시작한다.
+ * 로그인은 필요 없고 UTF-8이다.
+ *
+ * 목록:  webEtcResveList.do?key=113&etcProgramSection=EXPERIENCE&pageUnit=100&pageIndex=<쪽>
+ * 상세:  webEtcResveView.do?key=113&etcProgramSection=EXPERIENCE&searchEtcResveNo=..
+ *
+ * 접수상태가 `접수중`인 것만 남긴다 (남양주·서울 예약과 같은 기준).
+ * 상세는 열지 않는다 — 목록 한 줄에 대상·장소·신청·행사·문의가 다 들어 있다.
+ */
+
+const GIMPO_BASE = "https://www.gimpo.go.kr/reserve/";
+
+// 좌표는 목록이 전혀 주지 않는다. `장소` 값에 주소가 섞여 있는 항목도 있지만
+// 지오코딩은 인증키가 필요해서 하지 않았다. 그래서 김포시청 좌표를 공통으로 쓴다.
+// 나중에 남양주(NYJ_ORG_XY)처럼 기관별 표로 정교화할 수 있다.
+const GIMPO_CITY_XY = [37.6152, 126.7157];   // 김포시청
+
+// 정보 줄에서 떼어낼 라벨. 라벨이 더 있을 수 있으니 아는 것만 처리하고
+// 모르는 줄은 버린다.
+const GIMPO_LABELS = ["대상", "장소", "신청", "행사", "문의"];
+
+// "2026-06-17 ~ 2026-08-25" 를 앞·뒤 날짜로 가른다.
+// 상시 접수를 9999-01-01로 적어두는 곳이 있다(남양주에서 겪었다).
+// 그대로 두면 카드에 "9999년 1월 1일"이 뜨므로 마감이 없는 것으로 본다.
+function gimpoTerm(v) {
+  const [a, b] = String(v || "").split("~");
+  const s = toDate(a || "");
+  const e = toDate(b || "");
+  return [/^9999/.test(s) ? "" : s, /^9999/.test(e) ? "" : e];
+}
+
+async function collectGimpo() {
+  const out = [];
+
+  // pageUnit=10이 기본이라 첫 쪽만 받으면 10건뿐이다. 100으로 올리면 88건이
+  // 한 쪽에 다 온다. 넉넉히 4쪽까지 돌되 항목이 안 나오면 멈춘다.
+  for (let page = 1; page <= 4; page++) {
+    const html = await getText(
+      `${GIMPO_BASE}webEtcResveList.do?key=113&rep=1&etcProgramSection=EXPERIENCE` +
+      `&searchEtcGroup=0&pageUnit=100&searchCnd=all&searchKrwd=&pageIndex=${page}`,
+      `김포 목록 ${page}쪽`
+    );
+
+    // 항목 하나가 <li class="participation_item">로 시작한다. 표가 아니라서
+    // <tr>로 자를 수 없다 — 이 낱말로 잘라 조각을 만든다.
+    const chunks = html.split('<li class="participation_item"').slice(1);
+    if (!chunks.length) break;
+
+    for (const c of chunks) {
+      // 상태 배지: participation_label(대기중) / type2(접수중) / type3(마감·완료).
+      // 클래스 이름 대신 글자를 본다 — 클래스는 바뀔 수 있다.
+      const status = stripTags((c.match(/<span class="participation_label[^"]*">([\s\S]*?)<\/span>/) || [])[1] || "");
+      if (status !== "접수중") continue;
+
+      const title = stripTags((c.match(/<strong>([\s\S]*?)<\/strong>/) || [])[1] || "");
+      if (!title) continue;
+
+      const href = (c.match(/href="([^"]+)"/) || [])[1] || "";
+      const url  = href ? GIMPO_BASE + unent(href).replace(/^\.\//, "") : "";
+
+      // 사진은 participation_image 칸 안에만 있다. src가 /로 시작하는 상대 주소다.
+      const imgBox = (c.match(/<div class="participation_image">([\s\S]*?)<\/div>/) || [])[1] || "";
+      const src    = (imgBox.match(/<img[^>]+src="([^"]+)"/) || [])[1] || "";
+      const img    = src ? "https://www.gimpo.go.kr" + unent(src) : "";
+
+      // 정보 줄은 라벨과 값이 태그로만 나뉘어 있고 사이에 공백이 없다.
+      // 태그를 걷어낸 뒤 라벨을 머리글자로 떼어낸다.
+      const f = {};
+      for (const li of c.match(/<li class="participation_information_item">[\s\S]*?<\/li>/g) || []) {
+        const t   = stripTags(li);
+        const lab = GIMPO_LABELS.find((l) => t.startsWith(l));
+        if (lab) f[lab] = t.slice(lab.length).trim();
+      }
+
+      const [rcptStart, rcptEnd] = gimpoTerm(f["신청"]);
+      const [start, end]         = gimpoTerm(f["행사"]);   // 김포는 행사 날짜가 목록에 있다
+
+      const target = f["대상"] || "";
+      const age    = ageRange(target);
+      const [lat, lng] = GIMPO_CITY_XY;
+
+      out.push({
+        kind: "reserve",
+        group: "체험·견학",
+        sub: "",                               // 김포 목록에는 카테고리가 없다
+        title,
+        // 지역 이름은 다른 자료와 같은 꼴이라야 화면의 지역 필터가 맞는다
+        area: "경기 김포시",
+        place: f["장소"] || "",
+        target,                                // 원문 그대로
+        ageMin: age ? age[0] : null,
+        ageMax: age ? age[1] : null,
+        status,
+        start,
+        end,
+        rcptStart,
+        rcptEnd,
+        url,
+        img,
+        tel: f["문의"] || "",
+        lat, lng,
+      });
+    }
+
+    if (chunks.length < 100) break;            // 한 쪽으로 끝났다
+  }
+
+  console.log(`  김포 접수중 ${out.length}건`);
+  return out;
+}
+
 /* ── 직접 확인이 필요한 곳 (자동 수집이 안 되는 예약처) ────── */
 
 // 지금은 비어 있다. 하나뿐이던 남양주시 체험·견학 링크는 collectNamyangju()가
@@ -900,6 +1013,7 @@ const MANUAL = [];
   const tour  = await collectTour().catch((e) => { console.error("TourAPI 실패:", e.message); return []; });
   const std2  = await collectStandard2().catch((e) => { console.error("표준데이터 추가 실패:", e.message); return []; });
   const nyj   = await collectNamyangju().catch((e) => { console.error("남양주 실패:", e.message); return []; });
+  const gimpo = await collectGimpo().catch((e) => { console.error("김포 실패:", e.message); return []; });
 
   if (PEEK) { console.log("\n칸 이름 확인만 하고 끝냅니다."); return; }
 
@@ -929,7 +1043,7 @@ const MANUAL = [];
   console.log(`  이름 겹쳐 뺀 것 ${dropped}건`);
 
   // 빈 칸을 빼고 좌표 자릿수를 줄여 파일을 가볍게 만든다
-  const items = [...merged, ...seoul, ...nyj, ...MANUAL].map((it) => {
+  const items = [...merged, ...seoul, ...nyj, ...gimpo, ...MANUAL].map((it) => {
     const o = {};
     for (const [k, v] of Object.entries(it)) {
       if (v === "" || v === null || v === undefined) continue;
@@ -953,6 +1067,6 @@ const MANUAL = [];
   console.log(`  행사·축제 ${items.filter(i => i.kind === "festival").length}`);
   console.log(`  예약 프로그램 ${items.filter(i => i.kind === "reserve").length}`);
   console.log(`  상시 시설 ${items.filter(i => i.kind === "place").length}`);
-  console.log(`  (자료원별 중복 제거 전) 서울 ${seoul.length} / 표준데이터 ${std.length} / TourAPI ${tour.length} / 표준데이터 추가 ${std2.length} / 남양주 ${nyj.length}`);
+  console.log(`  (자료원별 중복 제거 전) 서울 ${seoul.length} / 표준데이터 ${std.length} / TourAPI ${tour.length} / 표준데이터 추가 ${std2.length} / 남양주 ${nyj.length} / 김포 ${gimpo.length}`);
   console.log(`  경기도 ${items.filter(i => String(i.area || "").startsWith("경기")).length}`);
 })();
