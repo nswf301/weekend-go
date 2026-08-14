@@ -759,245 +759,47 @@ function forestUrl(title) {
   return id ? `https://www.foresttrip.go.kr/indvz/main.do?hmpgId=${id}` : "";
 }
 
-/* ── 5. 경기도 시군 예약 — 남양주시 체험·견학 ──────────────────
- * 서울 예약(collectSeoul)과 같은 스키마로 맞춘다. API가 아니라 서버가 그려주는
- * 표(HTML)를 읽는다. 로그인은 필요 없고 UTF-8이다.
+/* ── 5. 경기도 시군 예약 — sigun 폴더 ────────────────────────
+ * 시군 하나에 파일 하나다 (sigun/남양주.js · sigun/김포.js).
+ * 여러 사람이 동시에 시군을 늘려도 서로 덮어쓰지 않게 파일을 나눠뒀다.
  *
- * 목록:  selectUserExprnTourBasicInfoList.do?key=3383&pageUnit=100&pageIndex=<쪽>
- * 상세:  selectUserExprnTourBasicInfoView.do?key=3383&searchTourKey=..&searchExprnKey=..
+ * 각 파일은 { name, area, collect(util) } 를 내보내고 항목 배열을 돌려준다.
+ * 공통 도구는 여기서 인자로 넘겨준다 — 시군 파일이 따로 복사해 가지면
+ * 날짜·실체참조·나이 읽기 규칙이 두 벌이 되어 나중에 어긋난다.
  *
- * 접수상태가 `접수중`인 것만 남긴다. 서울 예약이 `접수중·안내중`만 받는 것과
- * 같은 기준이다 (전체 104건 중 대부분이 이미 접수마감이다).
+ * 새 시군을 붙이는 방법은 sigun/지침.md 에 다 적어뒀다.
  */
 
-const NYJ_BASE = "https://www.nyj.go.kr/reserve/";
+const SIGUN_UTIL = { toDate, unent, ageRange };
 
-// 좌표는 페이지가 주지 않아서 기관별로 박아뒀다 (관광공사 API로 찾은 값).
-// 표에 없는 기관은 남양주시청 좌표를 쓴다 — `유아숲체험원`·`남양주 궁집`·
-// `REMEMBER 1910`은 관광공사에 등록이 없어 위치를 확인할 수 없었다.
-const NYJ_ORG_XY = {
-  "정약용유적지":     [37.5166, 127.2993],
-  "물맑음수목원":     [37.7058, 127.2956],
-  "남양주시립박물관": [37.5464, 127.2444],
-};
-const NYJ_CITY_XY = [37.6360, 127.2165];   // 남양주시청
+async function collectSigun() {
+  const dir = path.join(__dirname, "sigun");
+  if (!fs.existsSync(dir)) return [];
 
-async function getText(url, label) {
-  const res = await fetch(url, { headers: { "User-Agent": "weekend-go/1.0" } });
-  if (!res.ok) throw new Error(`${label}: HTTP ${res.status}`);
-  return await res.text();
-}
+  // 앞에 _가 붙은 파일은 건너뛴다 (나중에 공용 파일을 둘 자리)
+  const files = fs.readdirSync(dir)
+    .filter((f) => f.endsWith(".js") && !f.startsWith("_"))
+    .sort();
 
-// 태그를 걷어내고 실체참조를 되돌린 뒤 공백을 한 칸으로 줄인다
-const stripTags = (s) => unent(String(s || "").replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
-
-// 상세 페이지는 <th>항목</th><td>값</td> 쌍으로 되어 있다
-function nyjField(html, label) {
-  const m = html.match(new RegExp(`<th[^>]*>\\s*${label}\\s*</th>\\s*<td[^>]*>([\\s\\S]*?)</td>`));
-  return m ? stripTags(m[1]) : "";
-}
-
-async function collectNamyangju() {
   const out = [];
-
-  // 총 104건이라 pageUnit=100이면 두 쪽이면 끝난다. 넉넉히 4쪽까지 돌되
-  // 항목이 안 나오면 멈춘다.
-  for (let page = 1; page <= 4; page++) {
-    const html = await getText(
-      `${NYJ_BASE}selectUserExprnTourBasicInfoList.do?key=3383&pageUnit=100&pageIndex=${page}`,
-      `남양주 목록 ${page}쪽`
-    );
-    const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
-    let found = 0;
-
-    for (const row of rows) {
-      const tds = row.match(/<td[^>]*>[\s\S]*?<\/td>/g) || [];
-      if (tds.length < 7) continue;          // 머리글 줄(<th>)은 걸러진다
-      found++;
-
-      // 칸 순서: 0 번호 | 1 기관 | 2 카테고리 | 3 제목 | 4 접수기간 | 5 접수방법 | 6 접수상태
-      const status = stripTags(tds[6]);
-      if (status !== "접수중") continue;     // 접수마감·접수대기는 버린다
-
-      const org   = stripTags(tds[1]);
-      const cat   = stripTags(tds[2]);
-      const title = stripTags(tds[3]);
-      const term  = stripTags(tds[4]);
-
-      const href = (tds[3].match(/href="([^"]+)"/) || [])[1] || "";
-      const url  = href ? NYJ_BASE + unent(href).replace(/^\.\//, "") : "";
-
-      const [t1, t2] = term.split("~");
-      const rcptStart = toDate(t1 || "");
-      // 상시 접수를 9999-01-01로 적어두는 항목이 있다(REMEMBER 1910 전시해설).
-      // 그대로 두면 카드에 "접수 마감 9999년 1월 1일"이 뜬다. 마감이 없는 것으로 본다.
-      const rcptEndRaw = toDate(t2 || "");
-      const rcptEnd    = /^9999/.test(rcptEndRaw) ? "" : rcptEndRaw;
-
-      // 상세는 접수중인 것만 연다(10건 안팎이라 부담 없다).
-      // 못 받아도 목록 정보만으로 넣는다 — 수집 전체가 죽으면 안 된다.
-      let target = "", fee = "", place = "", tel = "", time = "";
-      if (url) {
-        try {
-          const d = await getText(url, `남양주 상세`);
-          target = nyjField(d, "모집대상");
-          fee    = nyjField(d, "이용요금");
-          place  = nyjField(d, "장소");
-          tel    = nyjField(d, "문의전화");
-          time   = nyjField(d, "소요시간");
-        } catch (e) {
-          console.warn(`  ! 남양주 상세 실패: ${title} (${e.message})`);
-        }
-      }
-
-      const age = ageRange(target);
-      const [lat, lng] = NYJ_ORG_XY[org] || NYJ_CITY_XY;
-
-      out.push({
-        kind: "reserve",
-        group: "체험·견학",
-        sub: cat,
-        title,
-        // 지역 이름은 다른 자료와 같은 꼴이라야 화면의 지역 필터가 맞는다
-        area: "경기 남양주시",
-        place: place || org,
-        target,                                // 원문 그대로
-        ageMin: age ? age[0] : null,
-        ageMax: age ? age[1] : null,
-        fee,
-        status,
-        time,
-        rcptStart,
-        rcptEnd,
-        url,
-        tel,
-        lat, lng,
-      });
+  for (const f of files) {
+    // 한 시군이 실패해도 나머지는 살아야 한다 — 시군마다 따로 감싼다
+    try {
+      const mod = require(path.join(dir, f));
+      const rows = await mod.collect(SIGUN_UTIL);
+      const list = Array.isArray(rows) ? rows : [];
+      console.log(`  ${mod.name || f} 접수중 ${list.length}건`);
+      out.push(...list);
+    } catch (e) {
+      console.error(`  ! 시군 실패: ${f} (${e.message})`);
     }
-
-    if (!found) break;
   }
-
-  console.log(`  남양주 접수중 ${out.length}건`);
-  return out;
-}
-
-/* ── 6. 경기도 시군 예약 — 김포시 견학·체험 ───────────────────
- * 남양주와 같은 스키마로 맞추지만 화면 구조가 다르다. 김포는 표(table)가 아니라
- * 목록(ul/li)이고, 항목 하나가 <li class="participation_item">로 시작한다.
- * 로그인은 필요 없고 UTF-8이다.
- *
- * 목록:  webEtcResveList.do?key=113&etcProgramSection=EXPERIENCE&pageUnit=100&pageIndex=<쪽>
- * 상세:  webEtcResveView.do?key=113&etcProgramSection=EXPERIENCE&searchEtcResveNo=..
- *
- * 접수상태가 `접수중`인 것만 남긴다 (남양주·서울 예약과 같은 기준).
- * 상세는 열지 않는다 — 목록 한 줄에 대상·장소·신청·행사·문의가 다 들어 있다.
- */
-
-const GIMPO_BASE = "https://www.gimpo.go.kr/reserve/";
-
-// 좌표는 목록이 전혀 주지 않는다. `장소` 값에 주소가 섞여 있는 항목도 있지만
-// 지오코딩은 인증키가 필요해서 하지 않았다. 그래서 김포시청 좌표를 공통으로 쓴다.
-// 나중에 남양주(NYJ_ORG_XY)처럼 기관별 표로 정교화할 수 있다.
-const GIMPO_CITY_XY = [37.6152, 126.7157];   // 김포시청
-
-// 정보 줄에서 떼어낼 라벨. 라벨이 더 있을 수 있으니 아는 것만 처리하고
-// 모르는 줄은 버린다.
-const GIMPO_LABELS = ["대상", "장소", "신청", "행사", "문의"];
-
-// "2026-06-17 ~ 2026-08-25" 를 앞·뒤 날짜로 가른다.
-// 상시 접수를 9999-01-01로 적어두는 곳이 있다(남양주에서 겪었다).
-// 그대로 두면 카드에 "9999년 1월 1일"이 뜨므로 마감이 없는 것으로 본다.
-function gimpoTerm(v) {
-  const [a, b] = String(v || "").split("~");
-  const s = toDate(a || "");
-  const e = toDate(b || "");
-  return [/^9999/.test(s) ? "" : s, /^9999/.test(e) ? "" : e];
-}
-
-async function collectGimpo() {
-  const out = [];
-
-  // pageUnit=10이 기본이라 첫 쪽만 받으면 10건뿐이다. 100으로 올리면 88건이
-  // 한 쪽에 다 온다. 넉넉히 4쪽까지 돌되 항목이 안 나오면 멈춘다.
-  for (let page = 1; page <= 4; page++) {
-    const html = await getText(
-      `${GIMPO_BASE}webEtcResveList.do?key=113&rep=1&etcProgramSection=EXPERIENCE` +
-      `&searchEtcGroup=0&pageUnit=100&searchCnd=all&searchKrwd=&pageIndex=${page}`,
-      `김포 목록 ${page}쪽`
-    );
-
-    // 항목 하나가 <li class="participation_item">로 시작한다. 표가 아니라서
-    // <tr>로 자를 수 없다 — 이 낱말로 잘라 조각을 만든다.
-    const chunks = html.split('<li class="participation_item"').slice(1);
-    if (!chunks.length) break;
-
-    for (const c of chunks) {
-      // 상태 배지: participation_label(대기중) / type2(접수중) / type3(마감·완료).
-      // 클래스 이름 대신 글자를 본다 — 클래스는 바뀔 수 있다.
-      const status = stripTags((c.match(/<span class="participation_label[^"]*">([\s\S]*?)<\/span>/) || [])[1] || "");
-      if (status !== "접수중") continue;
-
-      const title = stripTags((c.match(/<strong>([\s\S]*?)<\/strong>/) || [])[1] || "");
-      if (!title) continue;
-
-      const href = (c.match(/href="([^"]+)"/) || [])[1] || "";
-      const url  = href ? GIMPO_BASE + unent(href).replace(/^\.\//, "") : "";
-
-      // 사진은 participation_image 칸 안에만 있다. src가 /로 시작하는 상대 주소다.
-      const imgBox = (c.match(/<div class="participation_image">([\s\S]*?)<\/div>/) || [])[1] || "";
-      const src    = (imgBox.match(/<img[^>]+src="([^"]+)"/) || [])[1] || "";
-      const img    = src ? "https://www.gimpo.go.kr" + unent(src) : "";
-
-      // 정보 줄은 라벨과 값이 태그로만 나뉘어 있고 사이에 공백이 없다.
-      // 태그를 걷어낸 뒤 라벨을 머리글자로 떼어낸다.
-      const f = {};
-      for (const li of c.match(/<li class="participation_information_item">[\s\S]*?<\/li>/g) || []) {
-        const t   = stripTags(li);
-        const lab = GIMPO_LABELS.find((l) => t.startsWith(l));
-        if (lab) f[lab] = t.slice(lab.length).trim();
-      }
-
-      const [rcptStart, rcptEnd] = gimpoTerm(f["신청"]);
-      const [start, end]         = gimpoTerm(f["행사"]);   // 김포는 행사 날짜가 목록에 있다
-
-      const target = f["대상"] || "";
-      const age    = ageRange(target);
-      const [lat, lng] = GIMPO_CITY_XY;
-
-      out.push({
-        kind: "reserve",
-        group: "체험·견학",
-        sub: "",                               // 김포 목록에는 카테고리가 없다
-        title,
-        // 지역 이름은 다른 자료와 같은 꼴이라야 화면의 지역 필터가 맞는다
-        area: "경기 김포시",
-        place: f["장소"] || "",
-        target,                                // 원문 그대로
-        ageMin: age ? age[0] : null,
-        ageMax: age ? age[1] : null,
-        status,
-        start,
-        end,
-        rcptStart,
-        rcptEnd,
-        url,
-        img,
-        tel: f["문의"] || "",
-        lat, lng,
-      });
-    }
-
-    if (chunks.length < 100) break;            // 한 쪽으로 끝났다
-  }
-
-  console.log(`  김포 접수중 ${out.length}건`);
   return out;
 }
 
 /* ── 직접 확인이 필요한 곳 (자동 수집이 안 되는 예약처) ────── */
 
-// 지금은 비어 있다. 하나뿐이던 남양주시 체험·견학 링크는 collectNamyangju()가
+// 지금은 비어 있다. 하나뿐이던 남양주시 체험·견학 링크는 sigun/남양주.js가
 // 실제 프로그램을 받아오게 되면서 뺐다. 화면은 항목이 없는 섹션을 건너뛰므로
 // "직접 확인" 칸은 그냥 안 보인다. 앞으로 자동 수집이 안 되는 예약처를
 // 발견하면 여기에 넣는다.
@@ -1012,8 +814,7 @@ const MANUAL = [];
   const std   = await collectStandard().catch((e) => { console.error("표준데이터 실패:", e.message); return []; });
   const tour  = await collectTour().catch((e) => { console.error("TourAPI 실패:", e.message); return []; });
   const std2  = await collectStandard2().catch((e) => { console.error("표준데이터 추가 실패:", e.message); return []; });
-  const nyj   = await collectNamyangju().catch((e) => { console.error("남양주 실패:", e.message); return []; });
-  const gimpo = await collectGimpo().catch((e) => { console.error("김포 실패:", e.message); return []; });
+  const sigun = await collectSigun().catch((e) => { console.error("경기 시군 실패:", e.message); return []; });
 
   if (PEEK) { console.log("\n칸 이름 확인만 하고 끝냅니다."); return; }
 
@@ -1043,7 +844,7 @@ const MANUAL = [];
   console.log(`  이름 겹쳐 뺀 것 ${dropped}건`);
 
   // 빈 칸을 빼고 좌표 자릿수를 줄여 파일을 가볍게 만든다
-  const items = [...merged, ...seoul, ...nyj, ...gimpo, ...MANUAL].map((it) => {
+  const items = [...merged, ...seoul, ...sigun, ...MANUAL].map((it) => {
     const o = {};
     for (const [k, v] of Object.entries(it)) {
       if (v === "" || v === null || v === undefined) continue;
@@ -1067,6 +868,6 @@ const MANUAL = [];
   console.log(`  행사·축제 ${items.filter(i => i.kind === "festival").length}`);
   console.log(`  예약 프로그램 ${items.filter(i => i.kind === "reserve").length}`);
   console.log(`  상시 시설 ${items.filter(i => i.kind === "place").length}`);
-  console.log(`  (자료원별 중복 제거 전) 서울 ${seoul.length} / 표준데이터 ${std.length} / TourAPI ${tour.length} / 표준데이터 추가 ${std2.length} / 남양주 ${nyj.length} / 김포 ${gimpo.length}`);
+  console.log(`  (자료원별 중복 제거 전) 서울 ${seoul.length} / 표준데이터 ${std.length} / TourAPI ${tour.length} / 표준데이터 추가 ${std2.length} / 경기 시군 ${sigun.length}`);
   console.log(`  경기도 ${items.filter(i => String(i.area || "").startsWith("경기")).length}`);
 })();
