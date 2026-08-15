@@ -209,6 +209,24 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   padding:10px 4px 6px;
 }
 .sub-area span{font-weight:400;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+
+/* 권역 안이 많을 때(예약의 서울) 시군구도 접는다 — 권역 칸보다 한 단 안쪽 */
+.sub-zone{border-top:1px solid var(--line)}
+.sub-zone:first-child{border-top:0}
+.sub-zone > summary{
+  list-style:none;cursor:pointer;padding:12px 4px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:16px;font-weight:700;color:var(--ink-soft);
+}
+.sub-zone > summary::-webkit-details-marker{display:none}
+.sub-zone > summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+.sub-zone > summary .n{font-weight:400;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.sub-zone > summary .arrow{color:var(--ink-faint);transition:transform .15s}
+.sub-zone[open] > summary .arrow{transform:rotate(90deg)}
+.sub-body{padding:0 0 10px}
+.sub-body .card{margin-bottom:8px}
+.sub-body .card:last-child{margin-bottom:0}
+@media (prefers-reduced-motion:reduce){.sub-zone > summary .arrow{transition:none}}
 @media (prefers-reduced-motion:reduce){.zone > summary .arrow{transition:none}}
 
 /* ── 휴양림 탭 ───────────────────────────────────────────── */
@@ -676,11 +694,28 @@ function render(){
       + `<div class="zone-body"></div>`;
     const body=g.querySelector(".zone-body");
 
+    // 한 권역에 40곳이 넘으면(예약의 서울처럼) 시군구도 접는다.
+    // 적을 때까지 접으면 두 곳짜리 묶음까지 눌러야 해서 더 불편하다.
+    const foldArea = total > 40;
+    let firstArea = true;
+
     areas.forEach((items, areaName)=>{
-    const head=document.createElement("div");
-    head.className="sub-area";
-    head.innerHTML=`${esc(areaName)} <span>${items.length}곳</span>`;
-    body.appendChild(head);
+    let box = body;                       // 카드가 들어갈 자리
+    if(foldArea){
+      const sg=document.createElement("details");
+      sg.className="sub-zone";
+      if(firstArea){ sg.open = true; firstArea = false; }   // 가장 가까운 시군구만 펴둔다
+      sg.innerHTML=`<summary><span><span class="arrow">▸</span> ${esc(areaName)}</span>`
+        + `<span class="n">${items.length}곳</span></summary>`
+        + `<div class="sub-body"></div>`;
+      body.appendChild(sg);
+      box = sg.querySelector(".sub-body");
+    }else{
+      const head=document.createElement("div");
+      head.className="sub-area";
+      head.innerHTML=`${esc(areaName)} <span>${items.length}곳</span>`;
+      body.appendChild(head);
+    }
 
     items.forEach(i=>{
       let when="";
@@ -727,7 +762,7 @@ function render(){
             ${link}
           </div>
         </div>`;
-      body.appendChild(card);
+      box.appendChild(card);
     });
     });
       sec.appendChild(g);
