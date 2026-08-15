@@ -250,6 +250,25 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .forest:hover{color:var(--accent);text-decoration:underline}
 .forest:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
 
+/* ── 키즈카페 탭 — 남은 자리 ───────────────────────────────
+ * 지점 한 줄에 이름 + 남은 자리, 그 아래 회차별 시간·자리를 작게 붙인다. */
+.kid{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.kid .n{font-size:16px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kid .n.open{color:var(--accent)}
+.kid .n.full{color:var(--ink-faint);font-weight:400}
+.kid-slots{
+  padding:2px 2px 8px;font-size:14px;color:var(--ink-soft);
+  display:flex;flex-wrap:wrap;gap:4px 12px;font-variant-numeric:tabular-nums;
+}
+.kid-slots .zero{color:var(--ink-faint)}
+.kidbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.kidbar input[type=date]{
+  font:inherit;font-size:16px;padding:8px 10px;
+  border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);
+}
+#kidsMsg{margin:10px 2px;font-size:16px;color:var(--ink-soft)}
+#kidsMsg.warn{color:var(--warn)}
+
 /* ── 결과 요약 ───────────────────────────────────────────── */
 .summary{
   display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
@@ -456,9 +475,17 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
   <!-- ─────────── 키즈카페 ─────────── -->
   <section class="panel" id="panel-kids" role="tabpanel" aria-labelledby="tab-kids" hidden>
-    <p class="lead">서울시 25개 자치구의 서울형 키즈카페입니다. 이름을 누르면 그 지점의 예약 달력이 열리고,
-      <b>날짜를 고르면 회차별로 남은 자리가 보입니다.</b> 예약은 우리동네키움포털에서 합니다(로그인 필요).</p>
+    <p class="lead">서울시 25개 자치구의 서울형 키즈카페입니다. 날짜를 고르면 <b>지점마다 남은 자리</b>를
+      그 자리에서 세어 보여줍니다. 이름을 누르면 예약 달력으로 갑니다(예약은 로그인 필요).</p>
 
+    <div class="panelbox">
+      <div class="kidbar">
+        <input type="date" id="kidsDate" aria-label="키즈카페 볼 날짜">
+        <label class="check"><input type="checkbox" id="kidsOnlyOpen" checked> 자리 있는 곳만</label>
+      </div>
+    </div>
+
+    <p id="kidsMsg"></p>
     <div id="kidsList"></div>
 
     <div class="foot">
@@ -908,29 +935,90 @@ function drawForests(){
   });
 }
 
-/* ── 키즈카페 목록 ── */
-// 휴양림 탭과 같은 마크업(details.zone + .city + 링크 한 줄)을 그대로 쓴다.
-// 남은 자리는 여기 적지 않는다 — 수시로 바뀌어서 하루 지난 숫자는 헛걸음을 만든다.
+/* ── 키즈카페 목록 ────────────────────────────────────────
+ * 자리 숫자는 data.json에 담아두지 않는다 — 수시로 바뀌어 하루 지난 숫자는
+ * 헛걸음을 만든다. 대신 날짜를 고를 때마다 중계 함수에 물어 그 자리에서 센다.
+ * 우리동네키움포털은 화면이 직접 부르면 막기 때문에 함수를 거친다. */
+const KIDS_API = "https://asia-northeast3-weekend-go-1.cloudfunctions.net/slots";
+
+let kidsSlots = null;    // 조회 결과 { date, places:[{id,left,slots}] }
+let kidsBusy  = false;
+
+async function loadKidsSlots(date){
+  const msg=document.getElementById("kidsMsg");
+  kidsBusy=true; kidsSlots=null;
+  msg.className=""; msg.textContent="남은 자리를 세는 중입니다…";
+  drawKids();
+
+  try{
+    const r=await fetch(`${KIDS_API}?date=${encodeURIComponent(date)}`,{cache:"no-store"});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const j=await r.json();
+    if(j.error) throw new Error(j.error);
+    kidsSlots=j;
+    const t=new Date(j.checkedAt);
+    msg.className="";
+    msg.textContent=`${j.total}곳 중 ${j.open}곳에 자리가 있습니다`
+      + ` (${pad(t.getHours())}:${pad(t.getMinutes())} 기준${j.cached?", 잠시 전 값":""})`;
+  }catch(e){
+    kidsSlots=null;
+    msg.className="warn";
+    msg.textContent="지금은 남은 자리를 불러오지 못했습니다. 지점을 눌러 예약 달력에서 확인하세요.";
+  }
+  kidsBusy=false;
+  drawKids();
+}
+
 function drawKids(){
   const box=document.getElementById("kidsList");
   box.innerHTML="";
 
+  const onlyOpen=document.getElementById("kidsOnlyOpen").checked;
+  // 조회 결과가 있으면 지점 아이디로 붙여 쓴다
+  const byId=new Map();
+  if(kidsSlots) kidsSlots.places.forEach(p=>byId.set(p.id,p));
+  const idOf=k=>(String(k.url||"").match(/q_fcltyId=([A-Za-z0-9]+)/)||[])[1]||"";
+
   const gu=new Map();
   KIDS.forEach(k=>{
+    const got=byId.get(idOf(k));
+    if(kidsSlots && onlyOpen && !(got && got.left>0)) return;   // 자리 없는 곳은 숨긴다
     const a=k.area||"기타";
     if(!gu.has(a)) gu.set(a,[]);
-    gu.get(a).push(k);
+    gu.get(a).push([k,got]);
   });
+
+  if(!gu.size){
+    box.innerHTML=`<p class="help" style="padding:8px 2px">${
+      kidsSlots ? "이 날짜에 자리가 남은 곳이 없습니다. 위 체크를 끄면 전체를 볼 수 있습니다."
+                : "목록을 준비하는 중입니다."}</p>`;
+    return;
+  }
 
   gu.forEach((list,guName)=>{
     const g=document.createElement("details");
     g.className="zone";
+
     let inner="";
-    list.forEach(k=>{
-      inner+=`<a class="forest" href="${esc(k.url||"")}" target="_blank" rel="noopener">${esc(k.name||"")}</a>`;
+    list.forEach(([k,got])=>{
+      let right="";
+      if(got) right = got.left>0
+        ? `<span class="n open">${got.left}자리</span>`
+        : `<span class="n full">자리 없음</span>`;
+
+      inner+=`<a class="forest" href="${esc(k.url||"")}" target="_blank" rel="noopener">`
+        + `<span class="kid"><span>${esc(k.name||"")}</span>${right}</span></a>`;
+
+      if(got && got.slots.length){
+        inner+=`<div class="kid-slots">` + got.slots.map(s=>
+          `<span class="${s.left?"":"zero"}">${esc(s.begin)}~${esc(s.end)} ${s.left?s.left+"명":"마감"}</span>`
+        ).join("") + `</div>`;
+      }
     });
+
+    const sum=list.reduce((n,[,got])=>n+(got?got.left:0),0);
     g.innerHTML=`<summary><span><span class="arrow">▸</span> ${esc(guName)}</span>`
-      + `<span class="n">${list.length}곳</span></summary>`
+      + `<span class="n">${list.length}곳${kidsSlots?` · ${sum}자리`:""}</span></summary>`
       + `<div class="zone-body">${inner}</div>`;
     box.appendChild(g);
   });
@@ -1036,5 +1124,17 @@ FEES.forEach(name=>{
 drawAreaBox();
 drawCal();
 render();
+/* ── 키즈카페 날짜 칸 ── */
+// 처음 값은 찾기 탭에서 고른 날짜(기본은 이번 주 토요일)를 그대로 쓴다.
+const kidsDate=document.getElementById("kidsDate");
+kidsDate.value=state.date;
+kidsDate.onchange=()=>{ if(kidsDate.value && !kidsBusy) loadKidsSlots(kidsDate.value); };
+document.getElementById("kidsOnlyOpen").onchange=drawKids;
+
+// 탭을 처음 열 때 한 번 조회한다 (안 보는 사람에게 함수를 부르지 않으려고)
+document.getElementById("tab-kids").addEventListener("click",()=>{
+  if(!kidsSlots && !kidsBusy && kidsDate.value) loadKidsSlots(kidsDate.value);
+},{once:false});
+
 loadData().then(()=>{ drawAreaBox(); render(); drawForests(); drawKids(); });
 </script>

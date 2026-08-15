@@ -1,0 +1,12 @@
+{
+  "name": "weekend-go-functions",
+  "description": "서울형 키즈카페 남은 자리 중계",
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-functions": "^6.0.1"
+  },
+  "private": true
+}
