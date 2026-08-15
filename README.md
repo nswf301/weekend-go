@@ -35,6 +35,21 @@ git push
   루트에서 `git add -A`를 하지만 이 앱에는 못 미친다.
 - ⚠️ **이 폴더를 damoin-apps 안으로 옮기지 말 것.** 옮기면 damoin 저장소에 딸려 들어가
   배포.bat이 이 앱까지 쓸어 담는다.
+### 화면은 GitHub Pages, 함수만 Firebase
+
+키즈카페 남은 자리를 세는 중계 함수 하나만 Firebase에 있다(`functions/`). **화면을 옮긴 게
+아니다** — 화면은 지금도 GitHub Pages이고 배포는 `git push` 그대로다.
+
+```
+firebase deploy --only functions --project weekend-go-1 --account <가입한 계정>
+```
+
+- 프로젝트 `weekend-go-1`은 **이 앱 전용**이고 다모인 프로젝트(nswf301 계정)와 별개다.
+  다른 계정이라 `firebase login:add`로 계정을 하나 더 등록해두고 `--account`로 골라 쓴다.
+- 함수가 필요한 이유는 하나뿐이다 — 우리동네키움포털이 **다른 사이트에서 온 요청을 막아서**
+  (CORS) 화면이 직접 못 묻는다. 서버끼리는 막히지 않으므로 함수가 대신 묻는다.
+- 함수가 죽어도 화면은 산다. 목록과 예약 링크는 그대로 나오고 숫자만 안 보인다.
+
 - `keys.json`은 `.gitignore`에 있어 공개 저장소에 올라가지 않는다 (확인 완료).
 - `gh`는 `C:\Users\seong\tools\bin\gh.exe` (winget이 없는 LTSC라 zip으로 설치).
 
