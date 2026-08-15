@@ -48,7 +48,7 @@
   --btn-face:#EBA231;
   --btn-lip:#D08D1B;
   --btn-line:#B0741A;
-  --btn-lip-2:#E7D3AC;      /* 흰 버튼(지도)의 턱 — 흰 채움에 맞춘 연한 갈색 */
+  --btn-lip-2:#D08D1B;      /* 흰 버튼(지도)의 턱 — posthog는 흰 버튼도 턱이 진한 주황이다 */
   --sun:#CD4239;
   --sat:#0079FF;
 }
@@ -329,20 +329,21 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
  * 진한 갈주황(#B17816) 테두리를 두르고 같은 색 그림자를 아래로 밀어 두께를 만든다.
  * 채움만 다르다: 눌러야 할 쪽은 노랑, 곁들이는 쪽은 흰색. 글자는 둘 다 먹색이다
  * (노랑 위의 흰 글자는 대비가 모자라 안 읽힌다). */
-/* 그림자를 둘 겹친다. 앞의 것이 턱(색 있는 몸통), 뒤의 것이 그 턱을 감싸는
- * 아웃라인이다(2px 넓혀 그린다). 그래서 버튼과 턱이 한 덩어리로 보인다. */
+/* 그림자를 둘 겹친다. 뒤의 것이 아웃라인(넓히지 않아 버튼과 폭이 정확히 같다),
+ * 앞의 것이 턱인데 좌우로 2px씩 줄여(-2px) 그 아웃라인 안에 들어앉는다.
+ * 아웃라인을 넓히면 아래가 나팔처럼 벌어진다 — posthog는 위아래 폭이 같다. */
 .go{
   font-size:16px;font-weight:700;text-decoration:none;white-space:nowrap;
   padding:8px 18px;border-radius:10px;display:inline-block;color:var(--ink);
   border:2px solid var(--btn-line);
-  box-shadow:0 4px 0 var(--btn-lip), 0 4px 0 2px var(--btn-line);
+  box-shadow:0 6px 0 -2px var(--btn-lip), 0 6px 0 0 var(--btn-line);
   transition:transform .06s ease, box-shadow .06s ease;
 }
 .go.primary{background:var(--btn-face)}
 .go.primary:hover{background:#F5AE45}
 .go.map{
   background:var(--surface);
-  box-shadow:0 4px 0 var(--btn-lip-2), 0 4px 0 2px var(--btn-line);
+  box-shadow:0 6px 0 -2px var(--btn-lip-2), 0 6px 0 0 var(--btn-line);
 }
 .go.map:hover{background:#FDF3DF}
 .go:active{transform:translateY(4px);box-shadow:0 0 0 var(--btn-line)}
@@ -364,7 +365,7 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   appearance:none;font:inherit;font-size:16px;font-weight:700;
   background:var(--btn-face);color:#1E1F23;border:2px solid var(--btn-line);border-radius:10px;
   padding:11px 22px;cursor:pointer;margin-top:18px;
-  box-shadow:0 4px 0 var(--btn-lip), 0 4px 0 2px var(--btn-line);
+  box-shadow:0 6px 0 -2px var(--btn-lip), 0 6px 0 0 var(--btn-line);
   transition:transform .06s ease, box-shadow .06s ease;
 }
 .btn:hover{background:#F5AE45}
