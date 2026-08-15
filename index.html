@@ -316,13 +316,24 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .badge.open{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
 .badge.soon{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 .badge.free{background:transparent;color:var(--ink-soft)}
+/* 카드 안 두 버튼 — 설정의 .btn과 같은 입체 방식(아래로 밀린 단색 그림자)을 쓰되
+ * 작게 만든다. '자세히'는 주황 채움, '지도'는 흰 바탕이라 눌러야 할 쪽이 먼저 보인다. */
 .go{
-  font-size:16px;font-weight:600;color:var(--accent);
-  text-decoration:none;white-space:nowrap;padding:4px 2px;
+  font-size:16px;font-weight:600;text-decoration:none;white-space:nowrap;
+  padding:7px 14px;border-radius:6px;display:inline-block;
+  transition:transform .06s ease, box-shadow .06s ease;
 }
-.links{display:flex;gap:10px;flex-shrink:0}
-.go:hover{text-decoration:underline}
-.go:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.go.primary{background:var(--accent);color:#fff;box-shadow:0 2px 0 var(--accent-ink)}
+.go.primary:hover{background:#FF6A22}
+.go.map{
+  background:var(--surface);color:var(--ink);
+  border:1px solid var(--line-strong);box-shadow:0 2px 0 var(--line-strong);
+}
+.go.map:hover{background:var(--surface-2)}
+.go:active{transform:translateY(2px);box-shadow:none}
+.go:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.nolink{font-size:14px;color:var(--ink-faint);white-space:nowrap}
+.links{display:flex;gap:8px;flex-shrink:0}
 
 .empty{
   text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:16px;
@@ -695,8 +706,8 @@ function badges(item,dstr){
   }else if(item.start){
     out.push({t:"기간 중",c:"open"});
   }
-  if(item.sub)   out.push({t:item.sub,c:""});
-  else if(item.group) out.push({t:item.group,c:""});
+  // 분류 배지(교육체험·전시/관람·테마공원 …)는 달지 않는다 — 제목을 읽으면 아는
+  // 내용이라 배지 줄만 길어졌다. 되살리려면 이 자리에 sub/group을 다시 넣으면 된다.
   const fee=item.fee||"";
   if(fee) out.push({t:fee, c:/무료/.test(fee)?"free":""});
   if(item.park) out.push({t:item.park,c:"free"});
@@ -812,15 +823,15 @@ function render(){
       // 자세히는 url이 있을 때만. 지도는 좌표만 있으면 언제나 만든다
       // (주소를 저장하면 data.json이 통째로 불어나므로 여기서 만들어 쓴다).
       const links=[];
-      if(i.url) links.push(`<a class="go" href="${esc(i.url)}" target="_blank" rel="noopener">자세히 →</a>`);
+      if(i.url) links.push(`<a class="go primary" href="${esc(i.url)}" target="_blank" rel="noopener">자세히</a>`);
       if(i.lat!=null && i.lng!=null){
         const map=`https://map.naver.com/p/search/${encodeURIComponent(i.title||"")}`
                 + `?c=${i.lng},${i.lat},15,0,0,0,dh`;
-        links.push(`<a class="go" href="${esc(map)}" target="_blank" rel="noopener">지도 →</a>`);
+        links.push(`<a class="go map" href="${esc(map)}" target="_blank" rel="noopener">지도</a>`);
       }
       const link = links.length
         ? `<div class="links">${links.join("")}</div>`
-        : `<span class="go" style="opacity:.4">링크 없음</span>`;
+        : `<span class="nolink">링크 없음</span>`;
 
       // 사진은 서울 프로그램에만 있다. 못 불러오면 칸째로 접는다
       const thumb = i.img
