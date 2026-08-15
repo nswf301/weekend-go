@@ -133,6 +133,13 @@ const SEOUL_SERVICES = [
   ["ListPublicReservationEducation", "교육강좌"],
 ];
 
+/* 서울형 키즈카페 — 찾기 목록이 아니라 전용 탭으로 간다.
+ * 25개 자치구에 132곳이라 찾기 목록에 넣으면 다른 곳을 덮는다.
+ * 예약 링크(SVCURL)는 우리동네키움포털 달력이고, 거기 들어가면 회차별로
+ * 남은 자리가 보인다. 그 숫자를 여기서 미리 받아오지는 않는다 — 하루 한 번
+ * 수집한 값은 금방 낡아서 "어제 11자리 남음"이 헛걸음을 만든다. */
+const KIDSCAFE = [];
+
 async function collectSeoul() {
   const key = KEYS.seoulOpenData;
   if (!key) return [];
@@ -165,6 +172,23 @@ async function collectSeoul() {
         // 마감·중지된 것도 버린다 ("안내중"은 곧 열리는 것이라 남긴다)
         if (!["접수중", "안내중"].includes(r.SVCSTATNM)) continue;
 
+        // 서울형 키즈카페는 찾기 목록에 넣지 않는다 — 132곳이 지점마다 줄을 만들어
+        // 다른 곳을 덮는다. 대신 여기서 따로 모아 전용 탭(kidscafe)으로 보낸다.
+        if (/키즈카페/.test(`${r.SVCNM} ${r.MINCLASSNM || ""}`)) {
+          KIDSCAFE.push({
+            name: unent(r.SVCNM).replace(/^서울형 ?키즈카페 ?/, ""),
+            area: r.AREANM,
+            place: r.PLACENM,
+            tel: r.TELNO,
+            target: r.USETGTINFO,
+            fee: r.PAYATNM,
+            url: r.SVCURL,          // 우리동네키움포털 예약 달력 (회차별 남은 자리가 보인다)
+            img: r.IMGURL,
+            lat: num(r.Y), lng: num(r.X),
+          });
+          continue;
+        }
+
         // 단체 전용은 버린다. 다만 "개인/단체", "단체는 전화문의"처럼
         // 개인도 되는 것은 남긴다. ("용산가족공원"처럼 이름에 든 '가족'은
         // 세지 않으려고 '가족'은 대상 칸에서만 본다)
@@ -190,9 +214,6 @@ async function collectSeoul() {
 
         // 난임·임신·태교 프로그램은 나들이가 아니다
         if (/난임|임산부|임신부|예비임신|태교|산모/.test(both)) continue;
-
-        // 서울형 키즈카페는 동네 시설이라 뺀다 (지점마다 줄이 생겨 목록을 덮는다)
-        if (/키즈카페/.test(`${both} ${r.PLACENM || ""}`)) continue;
 
         const lat = num(r.Y), lng = num(r.X);
         if (!inBox(lat, lng)) continue;
@@ -905,6 +926,18 @@ const MANUAL = [];
     items,
     // 휴양림 탭에서 그대로 그리는 목록 (거르지도 정렬하지도 않는다)
     forests: FOREST.map(([region, city, name, id]) => ({ region, city, name, id })),
+    // 키즈카페 탭 — 자치구 가나다순으로 정렬해서 넘긴다
+    kidscafe: KIDSCAFE
+      .map((k) => {
+        const o = {};
+        for (const [a, v] of Object.entries(k)) {
+          if (v === "" || v === null || v === undefined) continue;
+          o[a] = (a === "lat" || a === "lng") ? Math.round(v * 1e4) / 1e4 : v;
+        }
+        return o;
+      })
+      .sort((a, b) => (a.area || "").localeCompare(b.area || "", "ko") ||
+                      (a.name || "").localeCompare(b.name || "", "ko")),
   };
 
   fs.writeFileSync(path.join(__dirname, "data.json"), JSON.stringify(data), "utf8");
@@ -914,6 +947,7 @@ const MANUAL = [];
   console.log(`  행사·축제 ${items.filter(i => i.kind === "festival").length}`);
   console.log(`  예약 프로그램 ${items.filter(i => i.kind === "reserve").length}`);
   console.log(`  상시 시설 ${items.filter(i => i.kind === "place").length}`);
+  console.log(`  키즈카페 탭 ${data.kidscafe.length}곳`);
   console.log(`  (자료원별 중복 제거 전) 서울 ${seoul.length} / 표준데이터 ${std.length} / TourAPI ${tour.length} / 표준데이터 추가 ${std2.length} / 경기 시군 ${sigun.length}`);
   console.log(`  경기도 ${items.filter(i => String(i.area || "").startsWith("경기")).length}`);
 })();
