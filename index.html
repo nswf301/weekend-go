@@ -316,21 +316,21 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .badge.open{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
 .badge.soon{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 .badge.free{background:transparent;color:var(--ink-soft)}
-/* 카드 안 두 버튼 — 설정의 .btn과 같은 입체 방식(아래로 밀린 단색 그림자)을 쓰되
- * 작게 만든다. '자세히'는 주황 채움, '지도'는 흰 바탕이라 눌러야 할 쪽이 먼저 보인다. */
+/* 카드 안 두 버튼 — posthog.com 실물 방식.
+ * 진한 갈주황(#B17816) 테두리를 두르고 같은 색 그림자를 아래로 밀어 두께를 만든다.
+ * 채움만 다르다: 눌러야 할 쪽은 노랑, 곁들이는 쪽은 흰색. 글자는 둘 다 먹색이다
+ * (노랑 위의 흰 글자는 대비가 모자라 안 읽힌다). */
 .go{
-  font-size:16px;font-weight:600;text-decoration:none;white-space:nowrap;
-  padding:7px 14px;border-radius:6px;display:inline-block;
+  font-size:16px;font-weight:700;text-decoration:none;white-space:nowrap;
+  padding:6px 14px;border-radius:6px;display:inline-block;color:var(--ink);
+  border:2px solid #B17816;box-shadow:0 2px 0 #B17816;
   transition:transform .06s ease, box-shadow .06s ease;
 }
-.go.primary{background:var(--accent);color:#fff;box-shadow:0 2px 0 var(--accent-ink)}
-.go.primary:hover{background:#FF6A22}
-.go.map{
-  background:var(--surface);color:var(--ink);
-  border:1px solid var(--line-strong);box-shadow:0 2px 0 var(--line-strong);
-}
-.go.map:hover{background:var(--surface-2)}
-.go:active{transform:translateY(2px);box-shadow:none}
+.go.primary{background:#F7A501}
+.go.primary:hover{background:#FFB524}
+.go.map{background:var(--surface)}
+.go.map:hover{background:#FDF3DF}
+.go:active{transform:translateY(2px);box-shadow:0 0 0 #B17816}
 .go:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .nolink{font-size:14px;color:var(--ink-faint);white-space:nowrap}
 .links{display:flex;gap:8px;flex-shrink:0}
@@ -346,9 +346,9 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
  * 누르면 그만큼 내려앉아 그림자가 사라진다.
  * 노랑은 바탕으로만 쓰고 글자는 먹색이라야 읽힌다(흰 글자는 대비가 모자란다). */
 .btn{
-  appearance:none;font:inherit;font-size:16px;font-weight:600;
-  background:#F7A501;color:#1E1F23;border:0;border-radius:6px;
-  padding:12px 20px;cursor:pointer;margin-top:18px;
+  appearance:none;font:inherit;font-size:16px;font-weight:700;
+  background:#F7A501;color:#1E1F23;border:2px solid #B17816;border-radius:6px;
+  padding:11px 20px;cursor:pointer;margin-top:18px;
   box-shadow:0 3px 0 #B17816;
   transition:transform .06s ease, box-shadow .06s ease;
 }
