@@ -137,6 +137,13 @@ body{
   font-size:14px;font-weight:600;color:var(--ink-soft);
   letter-spacing:.06em;text-transform:uppercase;
 }
+/* 찾기 탭의 물음 소제목 — 손그림 아이콘 + 묻는 말 (PostHog 쪽 방식) */
+.label.q{
+  display:flex;align-items:center;gap:8px;
+  font-size:19px;font-weight:700;color:var(--ink);
+  letter-spacing:-.01em;text-transform:none;
+}
+.label.q svg{width:24px;height:24px;flex:none}
 select,input[type="date"],input[type="text"]{
   font:inherit;font-size:16px;color:var(--ink);
   background:var(--surface-2);border:1px solid var(--line-strong);
@@ -360,24 +367,59 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
     <div class="panelbox">
       <div class="field">
-        <span class="label">언제</span>
+        <span class="label q">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4.5 7.2c4.8-.5 10.2-.6 15 0 .6 3.9.6 8.1 0 12.1-4.9.6-10.1.6-15 0-.7-4-.6-8.2 0-12.1Z"
+                  fill="var(--accent-soft)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M8.4 4.2v4M15.6 4.2v4M4.7 11.6c4.8-.5 10-.5 14.6 0"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="15.7" r="1.5" fill="var(--accent)"/>
+          </svg>
+          언제 갈까?
+        </span>
         <div class="cal" id="cal"></div>
       </div>
 
       <div class="field">
-        <span class="label">누가 가나</span>
+        <span class="label q">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="9" cy="7.6" r="3.4" fill="var(--accent-soft)" stroke="currentColor" stroke-width="2"/>
+            <path d="M3.4 19.7c.4-3.5 2.7-5.4 5.6-5.4s5.2 1.9 5.6 5.4c-3.7.6-7.5.6-11.2 0Z"
+                  fill="var(--accent-soft)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="17.7" cy="10.5" r="2.3" fill="var(--accent)" stroke="currentColor" stroke-width="2"/>
+            <path d="M15.9 19.9c.3-2.5 1-3.9 2.7-3.9 1.6 0 2.3 1.4 2.6 3.7"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          누가 갈까?
+        </span>
         <div class="checks" id="bandBox"></div>
         <p class="help">고른 나이가 갈 수 있는 것만 보여줍니다. 다 끄면 가리지 않습니다.</p>
       </div>
 
       <div class="field">
-        <span class="label">어디로</span>
+        <span class="label q">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 21.2c4.2-4.7 6.3-8.3 6.3-10.8C18.3 6.3 15.5 3.4 12 3.4S5.7 6.3 5.7 10.4c0 2.5 2.1 6.1 6.3 10.8Z"
+                  fill="var(--accent-soft)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="12" cy="10.3" r="2.6" fill="var(--accent)" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          어디로 갈까?
+        </span>
         <div class="checks" id="areaBox"></div>
         <p class="help">고른 지역만 보여줍니다. 다 끄면 가리지 않습니다.</p>
       </div>
 
       <div class="field">
-        <span class="label">요금</span>
+        <span class="label q">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M19.3 12v4.3c0 1.9-3.3 3.4-7.3 3.4s-7.3-1.5-7.3-3.4V12"
+                  fill="var(--accent-soft)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <ellipse cx="12" cy="11.9" rx="7.3" ry="3.4" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+            <path d="M9.5 10l1.4 2.6 1.1-1.7 1.1 1.7L14.5 10M9.9 11.7h4.2"
+                  stroke="var(--accent-ink)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          얼마면 되니?
+        </span>
         <div class="checks" id="feeBox"></div>
         <p class="help">고른 요금만 보여줍니다. 다 끄면 가리지 않습니다.</p>
       </div>
@@ -683,12 +725,11 @@ function render(){
       areas.get(k).push(i);
     });
 
-    let first = true;
+    // 처음에는 아무것도 펴지 않는다 — 제목만 보이고 사용자가 눌러서 연다
     zones.forEach((areas, zoneName)=>{
     const total = [...areas.values()].reduce((s,v)=>s+v.length, 0);
     const g=document.createElement("details");
     g.className="zone";
-    if(first){ g.open = true; first = false; }   // 섹션마다 가장 가까운 권역만 펴둔다
     g.innerHTML=`<summary><span><span class="arrow">▸</span> ${esc(zoneName)}</span>`
       + `<span class="n">${total}곳</span></summary>`
       + `<div class="zone-body"></div>`;
@@ -697,14 +738,13 @@ function render(){
     // 한 권역에 40곳이 넘으면(예약의 서울처럼) 시군구도 접는다.
     // 적을 때까지 접으면 두 곳짜리 묶음까지 눌러야 해서 더 불편하다.
     const foldArea = total > 40;
-    let firstArea = true;
 
     areas.forEach((items, areaName)=>{
     let box = body;                       // 카드가 들어갈 자리
     if(foldArea){
       const sg=document.createElement("details");
       sg.className="sub-zone";
-      if(firstArea){ sg.open = true; firstArea = false; }   // 가장 가까운 시군구만 펴둔다
+      // 시군구는 하나도 펴두지 않는다 — 권역을 열면 시군구 목록만 보이게
       sg.innerHTML=`<summary><span><span class="arrow">▸</span> ${esc(areaName)}</span>`
         + `<span class="n">${items.length}곳</span></summary>`
         + `<div class="sub-body"></div>`;
