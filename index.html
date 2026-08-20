@@ -262,6 +262,13 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 /* ── 키즈카페 탭 — 남은 자리 ───────────────────────────────
  * 지점 한 줄에 이름 + 남은 자리, 그 아래 회차별 시간·자리를 작게 붙인다. */
 .kid{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+/* 폰에는 hover가 없어 .forest의 주황·밑줄이 안 보인다.
+ * 지점 이름은 누르면 예약 달력으로 가므로 항상 링크처럼 보여준다. */
+.kid .go{
+  color:var(--accent);font-weight:700;
+  text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;
+}
+.kid .go::after{content:" a";font-weight:400;text-decoration:none}
 .kid .n{font-size:16px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 .kid .n.open{color:var(--accent)}
 .kid .n.full{color:var(--ink-faint);font-weight:400}
@@ -511,8 +518,7 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
   <!-- ─────────── 키즈카페 ─────────── -->
   <section class="panel" id="panel-kids" role="tabpanel" aria-labelledby="tab-kids" hidden>
-    <p class="lead">서울시 25개 자치구의 서울형 키즈카페입니다. 날짜를 고르면 <b>지점마다 남은 자리</b>를
-      그 자리에서 세어 보여줍니다. 이름을 누르면 예약 달력으로 갑니다(예약은 로그인 필요).</p>
+    <p class="lead">서울시 25개 자치구의 서울형 키즈카페입니다.</p>
 
     <div class="panelbox">
       <div class="kidbar">
@@ -992,10 +998,8 @@ async function loadKidsSlots(date){
     const j=await r.json();
     if(j.error) throw new Error(j.error);
     kidsSlots=j;
-    const t=new Date(j.checkedAt);
     msg.className="";
-    msg.textContent=`${j.total}곳 중 ${j.open}곳에 자리가 있습니다`
-      + ` (${pad(t.getHours())}:${pad(t.getMinutes())} 기준${j.cached?", 잠시 전 값":""})`;
+    msg.textContent="";   // 불러오면 안내를 지운다 — 회차 표가 곷 답이라 요약줄은 안 쓴다
   }catch(e){
     kidsSlots=null;
     msg.className="warn";
@@ -1051,7 +1055,7 @@ function drawKids(){
       if(got && !(got.left>0)) right = `<span class="n full">자리 없음</span>`;
 
       inner+=`<a class="forest" href="${esc(linkOf(k))}" target="_blank" rel="noopener">`
-        + `<span class="kid"><span>${esc(k.name||"")}</span>${right}</span></a>`;
+        + `<span class="kid"><span class="go">${esc(k.name||"")}</span>${right}</span></a>`;
 
       if(got && got.slots.length){
         inner+=`<div class="kid-slots">` + got.slots.map((s,i)=>
