@@ -92,7 +92,9 @@ async function fetchMany(places, date, dayNo, { batch = 10, gapMs = 120 } = {}) 
 }
 
 /* ── 바깥에서 부르는 것 ── */
-const dayNoOf = (date) => new Date(`${date}T00:00:00+09:00`).getDay() + 1;   // 일=1 … 토=7
+/* 서버가 어느 나라 시각을 쓰든 같은 요일이 나오게 UTC로 고정해 센다.
+ * (예전에 +09:00 + getDay()를 썼는데, Firebase 서버가 UTC라 토요일이 금요일로 밀렸다) */
+const dayNoOf = (date) => new Date(`${date}T00:00:00Z`).getUTCDay() + 1;   // 일=1 … 토=7
 
 async function collect(date, onlyId) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ""))) throw new Error("날짜는 2026-08-22 꼴이라야 합니다");
