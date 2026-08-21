@@ -773,6 +773,112 @@ const forestNorm = (s) => String(s || "")
   .replace(/^(국립|도립|시립|군립|공립)/, "")
   .replace(/자연휴양림/g, "휴양림");
 
+/* 휴양림 경리 정보 — 편의시설·사진·자체 홈페이지.
+ * 2026-08-20에 숩나들e 예약검색(`fcfsRsrvtRcrfrDtlDetls.do`)을 9개 권역 훑어 받았다.
+ * 잘 안 바뀌는 값이라 박아둔다. 다시 받으려면 그 페이지에서 한 번 조회한 뒤
+ * 주소의 `netfunnel_key`가 살아있는 동안(십수 분) 권역을 돌려야 한다.
+ * [이름, 편의시설[], 사진URL, 홈페이지URL] */
+const FOREST_INFO = new Map(
+  [
+  ["강씨봉자연휴양림", ["바베큐","야외 물놀이장","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/c139c94a-05d2-4474-9b29-4722d98d81f0.jpg", "https://gangssibong.foresttrip.go.kr"],
+  ["유명산자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/7bdb6b8a-d458-4796-9e7f-3ce5ca38c8af.jpg", ""],
+  ["청평자연휴양림", ["회의실/강당","야외 물놀이장","장애인 편의시설","바베큐"], "https://image.foresttrip.go.kr/ino/instt/9868744e-ddf1-4dd4-9685-17a8b5955c59.JPG", "https://campcp.foresttrip.go.kr"],
+  ["칼봉산자연휴양림", ["회의실/강당","바베큐","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/c3c6e863-7366-47e8-9850-501d4407e2fb.jpg", "https://kalbong.foresttrip.go.kr"],
+  ["강화자연휴양림", ["바베큐","레포츠시설","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/9c1de511-bfa8-49da-8cc7-67992b46b791.png", ""],
+  ["석모도자연휴양림", ["바베큐","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/746bffb4-30fd-4486-a5f4-434ca079778a.jpg", "https://sukmodo.foresttrip.go.kr"],
+  ["축령산자연휴양림", ["장애인 편의시설","야외 물놀이장"], "https://image.foresttrip.go.kr/ino/instt/2ae519f2-df11-46b8-acde-487ee09c930e.jpg", "https://chukryong.foresttrip.go.kr"],
+  ["수락산동막골자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/00ca26a7-8620-45ba-99a8-70978b1d71d6.png", ""],
+  ["동두천자연휴양림", ["바베큐","장애인 편의시설","야외 물놀이장"], "https://image.foresttrip.go.kr/ino/instt/9acf7700-3fe1-4265-b085-b6f340bebf26.jpg", "https://ddc.foresttrip.go.kr"],
+  ["서운산자연휴양림", ["바베큐","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/b58c1dfe-03dc-4495-81d7-2c771ffaf30d.jpg", ""],
+  ["신암저수지숲속야영장", [], "https://image.foresttrip.go.kr/ino/instt/34bb89e9-bca7-4c50-9f15-f55e9eb6e691.jpg", ""],
+  ["아세안자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/4113f4ed-5c6a-484d-b33b-9e1d8f2d890a.jpg", ""],
+  ["산음자연휴양림", ["반려견 동반(일부)","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/e17a2f53-b4d3-459b-a5e1-b3c7cf9aebc7.jpg", ""],
+  ["양평 백운봉 자연휴양림", ["장애인 편의시설","바베큐"], "https://image.foresttrip.go.kr/ino/instt/3c7ad01d-ac5d-4c0e-b04a-8025db4bbd61.jpg", "https://ypforest.foresttrip.go.kr"],
+  ["양평설매재자연휴양림", ["레포츠시설","야외 물놀이장","바베큐","장애인 편의시설","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/6df0d341-268f-4c55-ae15-6e1479931562.jpg", "https://snrf.foresttrip.go.kr"],
+  ["양평쉬자파크", ["회의실/강당","장애인 편의시설","바베큐"], "https://image.foresttrip.go.kr/ino/instt/050a1a41-afb2-4d56-b404-4ccb6990f5fe.jpg", "https://swijapark.foresttrip.go.kr"],
+  ["중미산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/dd026b54-2b2e-4ea7-a885-a836eb02581b.jpg", ""],
+  ["고대산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/e1554248-53a8-4d01-a9f1-b77d1b2fb465.jpg", "https://godaesan.foresttrip.go.kr"],
+  ["덕적도자연휴양림", ["회의실/강당","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/db2c4476-ca8c-4d6b-a023-dca1326f2d67.jpg", ""],
+  ["용인자연휴양림", ["장애인 편의시설","레포츠시설","바베큐","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/37fb9a82-6369-40c4-99e9-f748fe5aa566.JPG", "https://yonginforest.foresttrip.go.kr"],
+  ["의왕바라산자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/d1bbd569-a8c6-4bf6-9d6b-2904280ef680.jpg", "https://barasan.foresttrip.go.kr"],
+  ["무의도자연휴양림", ["장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/51454f52-9e79-4e3e-89bc-f5105a1aa8f3.jpg", ""],
+  ["운악산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/ccaac323-6c9e-4267-8c88-9d14d995cfd2.jpg", ""],
+  ["천보산자연휴양림", ["바베큐"], "https://image.foresttrip.go.kr/ino/instt/ae8f794a-359c-4dc4-a2fa-f1378e4467bb.jpg", "https://chunbosan.foresttrip.go.kr"],
+  ["무봉산 자연휴양림", ["바베큐","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/36bfa7a0-6c6e-4cbc-846f-abc85053215e.jpg", ""],
+  ["대관령자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/29b81336-fd4b-4ad9-a8e8-23ac92f20788.jpg", ""],
+  ["임해자연휴양림", ["장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/e66cb2ba-aed3-4e6d-b8bd-87ccaac9a6b8.jpg", "https://imhaeforest.foresttrip.go.kr"],
+  ["진부령자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/b4b92480-f370-4d10-a08a-45493be1a151.JPG", ""],
+  ["검봉산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/75a938d8-5c9f-4800-837a-80b2aa7a6bf7.jpg", ""],
+  ["삼척활기자연휴양림", ["회의실/강당","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/6e1b4e7d-44a0-46dc-84d1-59fc77513f2f.jpg", "https://samchok.foresttrip.go.kr"],
+  ["광치자연휴양림", ["바베큐","레포츠시설","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/71d17a9f-f9e5-4336-87a1-18180c024e56.jpg", ""],
+  ["미천골자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/ebed3009-4e8d-4c7c-9870-e1d9359c588f.jpg", ""],
+  ["송이밸리자연휴양림", ["레포츠시설","바베큐"], "https://image.foresttrip.go.kr/ino/instt/c15281cf-4295-4f4c-a6b4-4ebdc88751b0.jpg", "https://yang2.foresttrip.go.kr"],
+  ["망경대산자연휴양림", ["회의실/강당","바베큐"], "https://image.foresttrip.go.kr/ino/instt/0b6b100a-ef19-4881-a13e-5aed039c5016.JPG", ""],
+  ["백운산자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/f2514a78-cdea-485d-863c-038b780033a1.jpg", ""],
+  ["치악산자연휴양림", ["야외 물놀이장","바베큐"], "https://image.foresttrip.go.kr/ino/instt/3f339aa8-66bc-49e8-984b-3438761c2466.jpg", "https://chiakforest.foresttrip.go.kr"],
+  ["피노키오자연휴양림", ["회의실/강당","장애인 편의시설","야외 물놀이장","레포츠시설","바베큐"], "https://image.foresttrip.go.kr/ino/instt/ca7330e1-6040-421a-b384-37fdd6a5b3b4.jpg", "https://pinocchio.foresttrip.go.kr"],
+  ["갯골자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/4aa53020-8ef9-43e0-a9b8-1e0fcf6be991.JPG", ""],
+  ["방태산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/733ff67c-da98-43f7-9136-551125175634.jpg", ""],
+  ["용대자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/476ad8bf-3093-4aa2-ae04-0ffa06066b7a.jpg", ""],
+  ["하추자연휴양림", ["바베큐","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/65bd9dc0-625c-44a8-98b5-45221d6fef10.jpg", "https://hachu.foresttrip.go.kr"],
+  ["가리왕산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/8ef66722-24d6-4548-a2bf-8aa58b0b5bed.jpg", ""],
+  ["복주산자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/a5f8952a-f99f-44cc-a466-473ca1a1a463.jpg", ""],
+  ["철원두루웰숲속문화촌", ["바베큐"], "https://image.foresttrip.go.kr/ino/instt/99c57b06-afb6-47d3-a452-9d1943143cc2.jpg", "https://duroowell.foresttrip.go.kr"],
+  ["강원숲체험장", ["장애인 편의시설","회의실/강당","바베큐"], "https://image.foresttrip.go.kr/ino/instt/6538f969-5c3e-4ecc-bf48-a28d1d757196.jpg", ""],
+  ["용화산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/9c8cf340-996c-4582-9a4b-0148ba400c6b.jpg", ""],
+  ["집다리골자연휴양림", ["바베큐"], "https://image.foresttrip.go.kr/ino/instt/9169d0e6-8042-49c6-b913-3a8bc5fcd329.jpg", ""],
+  ["춘천숲자연휴양림", ["회의실/강당","야외 물놀이장","장애인 편의시설","바베큐"], "https://image.foresttrip.go.kr/ino/instt/f03b17db-5328-4ae0-bed5-41a8c287cbc8.jpg", ""],
+  ["태백고원자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/6f9f234f-deb1-4e01-86ee-20e49a0b1c91.jpg", "https://taebaek.foresttrip.go.kr"],
+  ["두타산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/c8a0b132-c90f-4983-b780-392633a3b23c.jpg", ""],
+  ["평창자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/ccdf113c-fc43-4fa5-8e97-3e99af1c723f.PNG", "https://forest700.foresttrip.go.kr"],
+  ["가리산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/b770807e-c0cb-459d-a5af-b61bcb031316.jpg", "https://garisan.foresttrip.go.kr"],
+  ["삼봉자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/ea90be12-5ea9-439f-818a-e249076bae5f.jpg", ""],
+  ["화천숲속야영장", ["반려견 동반(일부)"], "https://image.foresttrip.go.kr/ino/instt/1b1a5f95-9302-44fe-8272-3fc508f0f947.jpg", ""],
+  ["청태산자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/ef8bdd81-060c-4542-9baf-ed3b8454bc55.jpg", ""],
+  ["횡성자연휴양림", ["야외 물놀이장","레포츠시설","바베큐"], "https://image.foresttrip.go.kr/ino/instt/7fbe7aed-3368-4535-94bc-8ec06c4b21d9.jpg", "https://hsrf.foresttrip.go.kr/"],
+  ["성불산자연휴양림", ["회의실/강당","야외 물놀이장","바베큐"], "https://image.foresttrip.go.kr/ino/instt/b4ae0088-e09d-4efb-b918-fd866c410b49.jpg", "https://seongbulsan.foresttrip.go.kr"],
+  ["조령산자연휴양림", ["야외 물놀이장"], "https://image.foresttrip.go.kr/ino/instt/fd58e023-7eba-4571-a9d6-20e38caa5bfc.jpg", "https://jof.foresttrip.go.kr"],
+  ["소백산자연휴양림", ["바베큐"], "https://image.foresttrip.go.kr/ino/instt/fae40d83-414f-41db-873b-2a37a055cf80.jpg", "https://sobaek.foresttrip.go.kr"],
+  ["소선암자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/4dc86a82-4da7-4302-a068-bf63ec03f683.jpg", ""],
+  ["황정산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/014161bb-9862-47d5-b50f-6c929ef16adc.jpg", ""],
+  ["속리산말티재자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/100fa838-3b59-4fef-98a2-6d0f48811ec3.jpg", ""],
+  ["속리산숲체험휴양마을", ["야외 물놀이장","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/534e8561-619b-41a6-9161-9199c66c5996.jpg", ""],
+  ["충북알프스자연휴양림", ["바베큐","야외 물놀이장","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/4fd6022f-14c1-4a8a-9fea-ad52bee1258e.jpg", "https://alpshuyang.foresttrip.go.kr"],
+  ["민주지산자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/79b4ff07-78e1-43cb-ba18-6f0f3aea9483.jpg", "https://yd21.foresttrip.go.kr"],
+  ["장령산자연휴양림", ["장애인 편의시설","회의실/강당","야외 물놀이장"], "https://image.foresttrip.go.kr/ino/instt/a6ec4928-4358-4ca4-a8b5-83a38ec565dc.jpg", "https://jangryeongsan.foresttrip.go.kr"],
+  ["백야자연휴양림", ["장애인 편의시설","야외 물놀이장","바베큐"], "https://image.foresttrip.go.kr/ino/instt/f3e09df5-4e68-4bfb-b442-69b13ecd8bd4.jpg", "https://baekya.foresttrip.go.kr"],
+  ["수레의산자연휴양림", ["바베큐","장애인 편의시설","야외 물놀이장"], "https://image.foresttrip.go.kr/ino/instt/6732215e-2eb5-4123-8e11-00a128b64a71.jpg", "https://sureuisan.foresttrip.go.kr"],
+  ["박달재자연휴양림", ["바베큐"], "https://image.foresttrip.go.kr/ino/instt/6e0c7fd0-c6d9-4096-ad9b-4a9ef2af18a0.jpg", ""],
+  ["옥전자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/edd72ad5-b3ff-48c3-9f89-b06472571c67.jpg", ""],
+  ["좌구산휴양랜드", ["바베큐","회의실/강당","레포츠시설"], "https://image.foresttrip.go.kr/ino/instt/dba3489c-907c-4ca2-a884-9ab23e21fe87.JPG", "https://jpjwagu.foresttrip.go.kr"],
+  ["생거진천자연휴양림", ["회의실/강당","바베큐","야외 물놀이장","장애인 편의시설","레포츠시설"], "https://image.foresttrip.go.kr/ino/instt/e8bfcf0f-5062-4de0-bbf2-9a505792530e.jpg", "https://jincheon.foresttrip.go.kr"],
+  ["미원별빛자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/3fd85548-7e8c-4903-9850-73609d57fe6a.jpg", ""],
+  ["상당산성자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/3a389fdb-3c68-487f-a985-ea0699543e9c.jpg", ""],
+  ["옥화자연휴양림", ["야외 물놀이장","장애인 편의시설","바베큐","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/3695d72f-8796-46fe-b180-848a903d6721.jpg", "https://okhwa.foresttrip.go.kr"],
+  ["계명산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/85eb049a-848e-4e14-ad54-d8a847ccd88a.jpg", "https://gmf.foresttrip.go.kr"],
+  ["문성자연휴양림", ["레포츠시설","장애인 편의시설","야외 물놀이장","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/b74b791e-185a-4386-8f80-c7ee45c732b9.jpg", "https://hbf.foresttrip.go.kr"],
+  ["봉황자연휴양림", ["바베큐"], "https://image.foresttrip.go.kr/ino/instt/bff99235-bc26-43d4-9207-9a57fbf8942e.jpg", "https://bhf.foresttrip.go.kr"],
+  ["공주산림휴양마을", ["야외 물놀이장","레포츠시설"], "https://image.foresttrip.go.kr/ino/instt/55ac4152-c45a-441d-b4f3-e15f20d79478.jpg", "http://gongju.foresttrip.go.kr"],
+  ["금산산림문화타운", ["회의실/강당","장애인 편의시설","야외 물놀이장"], "https://image.foresttrip.go.kr/ino/instt/92662888-f859-4da3-93d7-9eb5f92e8f94.jpg", "https://gsforesttown.foresttrip.go.kr"],
+  ["금산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/3863b9ed-d5af-4cb5-8893-0c67f544bfd9.jpg", ""],
+  ["양촌자연휴양림", ["야외 물놀이장","회의실/강당","바베큐","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/92c67ff2-1db6-4373-b36f-7f114618c1c8.jpg", ""],
+  ["만인산자연휴양림", ["장애인 편의시설","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/5ebe3bec-4dea-4f06-8800-653305b9fac1.jpg", ""],
+  ["장태산자연휴양림", ["레포츠시설","장애인 편의시설","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/f6f6b051-9dd4-4c8a-abaa-be71d4bdeaaf.jpg", "https://nfcf0707.foresttrip.go.kr"],
+  ["성주산자연휴양림", ["회의실/강당","야외 물놀이장","바베큐","장애인 편의시설"], "https://image.foresttrip.go.kr/ino/instt/369dc56f-f1bf-44b6-8566-17921b56d3d6.jpg", ""],
+  ["오서산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/b2106242-b444-4317-809c-2609396c06a5.jpg", ""],
+  ["원산도자연휴양림", ["장애인 편의시설","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/fd078021-9b98-4c83-84fb-8b81a65302e1.png", ""],
+  ["만수산자연휴양림", ["야외 물놀이장"], "https://image.foresttrip.go.kr/ino/instt/001b00dd-8383-4638-8194-08c7e19379dd.jpg", ""],
+  ["용현자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/88451034-8728-4377-b8bd-547d427e9815.jpg", ""],
+  ["희리산자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/c82c632d-a8bd-49f6-a87f-3bc6e286b794.jpg", ""],
+  ["영인산자연휴양림", ["야외 물놀이장","레포츠시설","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/3a3eef1b-3c71-4390-9d90-d59d8c9dda50.jpg", "http://younginsan.foresttrip.go.kr"],
+  ["봉수산자연휴양림", ["회의실/강당","바베큐"], "https://image.foresttrip.go.kr/ino/instt/188657de-fb5e-48f6-98fe-0bff4587e2f3.jpg", "https://bongsoosan.foresttrip.go.kr"],
+  ["태학산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/78e55486-ad5d-4315-8146-95925756fda3.jpg", "https://taehaksan.foresttrip.go.kr"],
+  ["칠갑산자연휴양림", ["바베큐","레포츠시설","장애인 편의시설","회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/bf28cefb-3ba4-4da4-acb3-1e71a9ed21b9.jpg", "https://chilgap.foresttrip.go.kr"],
+  ["안면도자연휴양림", ["회의실/강당"], "https://image.foresttrip.go.kr/ino/instt/faf0488a-8afc-4b6f-a5af-8bf2efb7ad30.jpg", "https://anmyeon.foresttrip.go.kr"],
+  ["용봉산자연휴양림", [], "https://image.foresttrip.go.kr/ino/instt/dd47b01f-23f1-4e60-a958-9f8affc236e6.jpg", "https://yongbong.foresttrip.go.kr"],
+  ].map(([name, fac, img, home]) => [forestNorm(name), { fac, img, home }])
+);
+
 const FOREST_MAP = new Map();
 for (const [, , name, id] of FOREST) {
   const k = forestNorm(name);
@@ -925,7 +1031,12 @@ const MANUAL = [];
     count: items.length,
     items,
     // 휴양림 탭에서 그대로 그리는 목록 (거르지도 정렬하지도 않는다)
-    forests: FOREST.map(([region, city, name, id]) => ({ region, city, name, id })),
+    forests: FOREST.map(([region, city, name, id]) => {
+      const x = FOREST_INFO.get(forestNorm(name)) || {};
+      /* home(자체 홈페이지)은 뿑아두었지만 내보내지 않는다 — ○○.foresttrip.go.kr은
+       * meta refresh로 indvz 예약 페이지로 보내는 꺽데기라 따로 보여줄 이유가 없다. */
+      return { region, city, name, id, fac: x.fac || [], img: x.img || "" };
+    }),
     // 키즈카페 탭 — 자치구 가나다순으로 정렬해서 넘긴다
     kidscafe: KIDSCAFE
       .map((k) => {
