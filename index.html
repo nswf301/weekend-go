@@ -261,6 +261,23 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
 /* ── 키즈카페 탭 — 남은 자리 ───────────────────────────────
  * 지점 한 줄에 이름 + 남은 자리, 그 아래 회차별 시간·자리를 작게 붙인다. */
+/* 휴양림 한 칸 — 사진 | 이름·배지·홈페이지 | 예약 버튼.
+ * 키즈카페와 같은 구성이다 — 이름은 평문이고 누를 곳은 오른쪽 흰 버튼이다. */
+.fst-item{display:flex;gap:10px;align-items:flex-start;padding:10px 2px;border-bottom:1px solid var(--line)}
+.fst-item:last-child{border-bottom:0}
+.fst-img{
+  flex:0 0 auto;width:64px;height:64px;border-radius:4px;object-fit:cover;
+  border:1px solid var(--line);background:var(--surface-2);
+}
+.fst-main{flex:1;min-width:0}
+.fst-nm{font-size:16px;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
+.fst-fac{margin-top:5px;display:flex;flex-wrap:wrap;gap:5px}
+.fst-fac span{
+  font-size:14px;color:var(--ink-soft);white-space:nowrap;
+  border:1px solid var(--line);border-radius:3px;padding:0 6px;
+}
+.fst-go{flex:0 0 auto;align-self:center;padding-bottom:6px}
+
 /* 지점 한 칸 — 이름 줄 아래로
  *   왼쪽: 회차별 줄 (인원은 왼쪽으로 당겨둔다)
  *   오른쪽: 그 줄들을 통째로 감싸는 칸 하나 = 예약 버튼
@@ -972,7 +989,17 @@ function drawForests(){
       inner+=`<p class="city">${esc(cityName)}</p>`;
       list.forEach(f=>{
         const u=`https://www.foresttrip.go.kr/indvz/main.do?hmpgId=${f.id}`;
-        inner+=`<a class="forest" href="${esc(u)}" target="_blank" rel="noopener">${esc(f.name)}</a>`;
+        const img=f.img
+          ? `<img class="fst-img" src="${esc(f.img)}" alt="" loading="lazy">`
+          : `<span class="fst-img"></span>`;
+        const fac=(f.fac&&f.fac.length)
+          ? `<div class="fst-fac">${f.fac.map(x=>`<span>${esc(x)}</span>`).join("")}</div>` : "";
+        /* 자체 홈페이지(○○.foresttrip.go.kr)는 넣지 않는다 — meta refresh로
+         * 예약 버튼과 같은 주소로 보내는 꺽데기라 누를 이유가 없다(2026-08-20 확인). */
+        inner+=`<div class="fst-item">${img}`
+          + `<div class="fst-main"><div class="fst-nm">${esc(f.name)}</div>${fac}</div>`
+          + `<span class="fst-go"><a class="go map" href="${esc(u)}" target="_blank" rel="noopener">예약</a></span>`
+          + `</div>`;
       });
     });
 
