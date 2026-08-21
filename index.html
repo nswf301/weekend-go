@@ -969,16 +969,29 @@ function drawForests(){
   const box=document.getElementById("forestList");
   box.innerHTML="";
 
+  /* 찾기 탭과 같은 권역 단위로 묶고, 지역 체크도 같이 따른다.
+   * 예전에는 data.json의 region(수도권·충북 …)으로 묶어 체크 이름과 안 맞았다. */
+  const kept=FORESTS.filter(f=>state.areas.size===0 || state.areas.has(ZONE_OF[f.sido]||"그 밖"));
+
   const regions=new Map();
-  FORESTS.forEach(f=>{
-    if(!regions.has(f.region)) regions.set(f.region,new Map());
-    const cities=regions.get(f.region);
+  kept.forEach(f=>{
+    const z=ZONE_OF[f.sido]||"그 밖";
+    if(!regions.has(z)) regions.set(z,new Map());
+    const cities=regions.get(z);
     if(!cities.has(f.city)) cities.set(f.city,[]);
     cities.get(f.city).push(f);
   });
 
+  if(!regions.size){
+    box.innerHTML=`<p class="help" style="padding:8px 2px">고른 지역에는 휴양림이 없습니다. 찾기 탭에서 지역을 더 켜보세요.</p>`;
+    return;
+  }
+
   let first=true;
-  regions.forEach((cities,regionName)=>{
+  [...regions.keys()]
+    .sort((a,b)=>ZONE_ORDER.indexOf(a)-ZONE_ORDER.indexOf(b))
+    .map(z=>[z,regions.get(z)])
+    .forEach(([regionName,cities])=>{
     const n=[...cities.values()].reduce((s,a)=>s+a.length,0);
     const g=document.createElement("details");
     g.className="zone";
@@ -1007,7 +1020,7 @@ function drawForests(){
       + `<span class="n">${n}곳</span></summary>`
       + `<div class="zone-body">${inner}</div>`;
     box.appendChild(g);
-  });
+    });
 }
 
 /* ── 키즈카페 목록 ────────────────────────────────────────
@@ -1045,6 +1058,12 @@ async function loadKidsSlots(date){
 function drawKids(){
   const box=document.getElementById("kidsList");
   box.innerHTML="";
+
+  /* 서울형 키즈카페라 전부 서울이다. 찾기 탭에서 서울을 꺼두면 여기도 가린다. */
+  if(state.areas.size>0 && !state.areas.has("서울")){
+    box.innerHTML=`<p class="help" style="padding:8px 2px">서울을 꺼두셨습니다. 키즈카페는 전부 서울이라 보이지 않습니다 — 찾기 탭에서 서울을 켜세요.</p>`;
+    return;
+  }
 
   const onlyOpen=document.getElementById("kidsOnlyOpen").checked;
   // 조회 결과가 있으면 지점 아이디로 붙여 쓴다
@@ -1191,7 +1210,10 @@ function drawAreaBox(){
     l.querySelector("input").onchange=e=>{
       if(e.target.checked) state.areas.add(n); else state.areas.delete(n);
       areaSaved=true;
-      saveSet(); render();
+      saveSet();
+      render();
+      drawForests();   // 휴양림·키즈카페 탭도 같은 지역 체크를 따르므로 함께 다시 그린다
+      drawKids();
     };
     box.appendChild(l);
   });
