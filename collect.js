@@ -12,8 +12,12 @@ const path = require("path");
 
 /* ── 설정 ────────────────────────────────────────────────── */
 
-// 서울에서 대략 2시간 반경만 남긴다 (전국을 다 담으면 파일이 너무 커진다)
-const BOX = { latMin: 36.2, latMax: 38.4, lngMin: 125.7, lngMax: 128.8 };
+/* 서울 시청에서 잰 거리로 자른다.
+ * 2026-08-22에 100km 네모 상자에서 300km 반경으로 바꿨다 — 상자로 자르니
+ * 강릉(경도 128.88)이 lngMax 128.8에 0.08도 차이로 잘려 나갔다.
+ * 상자를 그냥 넓히면 부산(서울에서 325km)까지 들어오므로 진짜 거리를 잰다. */
+const CENTER = { lat: 37.5665, lng: 126.9780 };   // 서울시청
+const MAX_KM = 300;
 
 // 오늘 이전에 끝난 행사는 버린다
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -59,12 +63,17 @@ const num = (v) => {
   return Number.isFinite(n) ? n : null;
 };
 
+function kmFromCenter(lat, lng) {
+  const R = 6371, rad = d => (d * Math.PI) / 180;
+  const dLat = rad(lat - CENTER.lat), dLng = rad(lng - CENTER.lng);
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(CENTER.lat)) * Math.cos(rad(lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+}
+
+// 이름은 그대로 둔다 — 부르는 곳이 여럿이고 하는 일(반경 안인가)은 같다
 function inBox(lat, lng) {
-  return (
-    lat !== null && lng !== null &&
-    lat >= BOX.latMin && lat <= BOX.latMax &&
-    lng >= BOX.lngMin && lng <= BOX.lngMax
-  );
+  return lat !== null && lng !== null && kmFromCenter(lat, lng) <= MAX_KM;
 }
 
 /* ── 대상 문구에서 나이 읽기 ──────────────────────────────
@@ -225,7 +234,9 @@ async function collectSeoul() {
           group: kindName,
           sub: r.MINCLASSNM || "",                 // 소분류 (역사·자연·공예)
           title: unent(r.SVCNM),
-          area: r.AREANM,
+          // AREANM이 빈 건이 있다(2026-08-22 기준 25건). 그대로 두면 화면에
+          // 시군구 자리가 빈칸으로 뜬다. 서울 자료원이므로 "서울"로 채운다.
+          area: r.AREANM || "서울",
           place: r.PLACENM,
           target: tgt,                             // 원문 그대로
           ageMin: age ? age[0] : null,
@@ -271,7 +282,14 @@ const SIDO = {
   "경상북도":"경북", "경상남도":"경남", "대구광역시":"대구",
   "부산광역시":"부산", "울산광역시":"울산", "광주광역시":"광주",
   "전라남도":"전남", "제주특별자치도":"제주", "세종특별시":"세종",
+  // 2026-08-22에 표준데이터에서 발견한 이름들. 없어서 46건이 "그 밖"으로 샜다.
+  "전라북도":"전북",
+  "전남광주통합특별시":"전남",   // 아래에서 구 단위는 광주로 다시 가른다
 };
+/* 전남과 광주가 한 시도로 합쳐져 이름 하나로 온다. 권역(전라권)은 같지만
+ * 화면에 "전남 북구"라고 뜨면 이상하므로, 구 단위는 광주로 돌린다.
+ * 전남에는 자치구가 없고 광주에만 있어서 이 판정이 성립한다. */
+const MERGED_SIDO = "전남광주통합특별시";
 // 긴 이름부터 검사해야 "강원특별자치도"가 "강원도"보다 먼저 걸린다
 const SIDO_NAMES = Object.keys(SIDO).sort((a, b) => b.length - a.length);
 // 주소 문자열만 받는 속살. TourAPI처럼 칸 이름이 다른 자료도 같은 규칙을 쓰게 하려고 뺐다.
@@ -282,6 +300,7 @@ function areaOfAddr(addr){
   const stuck = SIDO_NAMES.find(k => sido.length > k.length && sido.startsWith(k));
   if(stuck){ sigungu = sido.slice(stuck.length); sido = stuck; }
   if(!sigungu) return sido;
+  if(sido === MERGED_SIDO) return `${/구$/.test(sigungu) ? "광주" : "전남"} ${sigungu}`;
   const short = SIDO[sido];
   if(short === "") return sigungu;                 // 서울은 구 이름만
   if(short) return `${short} ${sigungu}`;
@@ -392,10 +411,13 @@ async function collectStandard() {
 
 const TOUR_BASE = "https://apis.data.go.kr/B551011/KorService2/";
 
-// 서울·경기·인천과 반경에 걸치는 도 단위만 받는다 (부산·제주는 어차피 반경 밖)
+/* 반경 300km에 조금이라도 걸치는 시도를 받는다. 실제로 남길지는 kmFromCenter가 정한다.
+ * 부산(325km)·제주는 중심이 확실히 밖이라 부르지 않는다 — 부르면 호출만 낭비다. */
 const TOUR_AREAS = [
   ["1", "서울"], ["31", "경기"], ["2", "인천"], ["32", "강원"],
   ["33", "충북"], ["34", "충남"], ["8", "세종"], ["3", "대전"],
+  ["37", "전북"], ["35", "경북"], ["4", "대구"],
+  ["5", "광주"], ["36", "경남"], ["38", "전남"], ["7", "울산"],
 ];
 
 // 관광지(contentTypeId=12) 중 무조건 남기는 분류.
