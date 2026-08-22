@@ -1145,7 +1145,8 @@ document.querySelectorAll(".tab").forEach(t=>{
 /* ── 설정 ── */
 const originSel=document.getElementById("originSel");
 ORIGINS.forEach(([n])=>{
-  const op=document.createElement("option"); op.value=n; op.textContent=`서울 ${n}`;
+  // 자치구 목록일 때 "서울 노원구"로 보이게 붙였던 접두어다. 이제 이름이 곧 시·도다.
+  const op=document.createElement("option"); op.value=n; op.textContent=n;
   originSel.appendChild(op);
 });
 
