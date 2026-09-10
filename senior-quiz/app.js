@@ -93,10 +93,8 @@ async function fillTicket() {
     return;
   }
   try {
-    const res = await fetch('/.netlify/functions/ticket', { method: 'POST' });
-    if (!res.ok) throw new Error('bad status');
-    const data = await res.json();
-    const num = String(data.number);
+    const { issueTicketNumber } = await import('./ticket.js');
+    const num = String(await issueTicketNumber());
     localStorage.setItem(TICKET_KEY, num);
     el.innerHTML = `참여 번호 <strong>${esc(num)}번</strong>`;
   } catch (e) {
