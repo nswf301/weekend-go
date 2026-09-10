@@ -1,0 +1,25 @@
+rules_version = '2';
+
+// weekend-go-1 프로젝트의 Firestore 규칙.
+// 지금은 어르신 퀴즈 앱(senior-quiz)의 참여 번호 하나만 쓴다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 참여 번호를 세는 숫자 하나.
+    // 누구나 읽을 수 있고, 쓰기는 "정확히 1 늘리기"만 허용한다.
+    match /quiz/counter {
+      allow get: if true;
+      allow create: if request.resource.data.keys().hasOnly(['count'])
+                    && request.resource.data.count == 1;
+      allow update: if request.resource.data.keys().hasOnly(['count'])
+                    && request.resource.data.count is int
+                    && request.resource.data.count == resource.data.count + 1;
+      allow delete: if false;
+    }
+
+    // 그 밖의 모든 곳은 막는다.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
