@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>부스 QR 인쇄</title>
+  <style>
+    :root {
+      --text: #2b2320;
+      --muted: #6d635d;
+      --point: #f36458;
+      --line: #e8ded6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #f4efe9;
+      color: var(--text);
+      font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+      font-size: 16px;
+    }
+
+    .top {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 20px 8px;
+    }
+
+    .top h1 { font-size: 24px; margin: 0 0 10px; }
+
+    .top p {
+      color: var(--muted);
+      line-height: 1.7;
+      margin: 0 0 8px;
+    }
+
+    .top code {
+      background: #fff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+    }
+
+    .print-btn {
+      margin: 10px 0 20px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 12px;
+      background: var(--point);
+      color: #fff;
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .warn { color: #b4342a; font-size: 18px; }
+
+    /* ---------- 부스 한 장 ---------- */
+    .sheet {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 24px;
+      padding: 24mm 18mm;
+      background: #fff;
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+    }
+
+    .sheet-event {
+      font-size: 26px;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    .sheet-name {
+      font-size: 62px;
+      font-weight: 800;
+      margin: 0 0 18px;
+      letter-spacing: -1px;
+    }
+
+    .sheet-qr { margin: 0 0 14px; }
+
+    .sheet-qr img,
+    .sheet-qr canvas {
+      width: 128mm !important;
+      height: 128mm !important;
+      display: block;
+    }
+
+    .sheet-qr table { display: none; }
+
+    .sheet-guide {
+      font-size: 30px;
+      font-weight: 700;
+      margin: 0 0 26px;
+    }
+
+    .sheet-pin {
+      border: 4px dashed var(--point);
+      border-radius: 18px;
+      padding: 16px 40px;
+    }
+
+    .sheet-pin-label {
+      font-size: 22px;
+      color: var(--muted);
+      margin: 0 0 4px;
+    }
+
+    .sheet-pin-value {
+      font-size: 68px;
+      font-weight: 800;
+      letter-spacing: 10px;
+      margin: 0;
+      color: var(--point);
+    }
+
+    /* ---------- 인쇄 ---------- */
+    @page { size: A4; margin: 0; }
+
+    @media print {
+      body { background: #fff; }
+      .top { display: none; }
+      .sheet {
+        margin: 0;
+        border: none;
+        page-break-after: always;
+        break-after: page;
+      }
+      .sheet:last-child { page-break-after: auto; break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h1>부스 QR 인쇄판</h1>
+    <p>부스 하나가 A4 한 장입니다. 아래 버튼을 누르고 <b>용지 A4·여백 없음</b>으로 인쇄하세요.</p>
+    <p>QR이 가리키는 주소는 <code id="addr"></code> 입니다.</p>
+    <p>부스 이름이나 네 자리 번호를 바꾸려면 <code>config.js</code>를 고친 뒤 이 화면을 다시 열면 됩니다.</p>
+    <button class="print-btn" onclick="window.print()">인쇄하기</button>
+  </div>
+  <div id="sheets"></div>
+  <script type="module" src="print.js"></script>
+</body>
+</html>
