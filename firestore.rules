@@ -1,19 +1,34 @@
 rules_version = '2';
 
 // weekend-go-1 프로젝트의 Firestore 규칙.
-// 지금은 어르신 퀴즈 앱(senior-quiz)의 참여 번호 하나만 쓴다.
+// 지금은 어르신 놀이 한마당(nori)의 참여 번호와 도장만 쓴다.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 참여 번호를 세는 숫자 하나.
+    // 참여 번호를 세는 숫자 하나. 마지막 번호가 곧 참여 인원수다.
     // 누구나 읽을 수 있고, 쓰기는 "정확히 1 늘리기"만 허용한다.
-    match /quiz/counter {
+    match /nori/counter {
       allow get: if true;
       allow create: if request.resource.data.keys().hasOnly(['count'])
                     && request.resource.data.count == 1;
       allow update: if request.resource.data.keys().hasOnly(['count'])
                     && request.resource.data.count is int
                     && request.resource.data.count == resource.data.count + 1;
+      allow delete: if false;
+    }
+
+    // 참여자별 도장. 문서 id 가 참여 번호이고 이름 같은 개인정보는 담지 않는다.
+    // 관리 화면이 전체를 훑어야 하므로 list 도 열어 둔다.
+    // 도장은 지울 수 없고, 부스 수(7개)보다 많이 담을 수도 없다.
+    match /players/{playerId} {
+      allow get, list: if true;
+      allow create: if request.resource.data.keys().hasOnly(['stamps', 'updatedAt'])
+                    && request.resource.data.stamps is map
+                    && request.resource.data.stamps.size() <= 7;
+      allow update: if request.resource.data.keys().hasOnly(['stamps', 'updatedAt'])
+                    && request.resource.data.stamps is map
+                    && request.resource.data.stamps.size() <= 7
+                    && request.resource.data.stamps.size() >= resource.data.stamps.size();
       allow delete: if false;
     }
 
