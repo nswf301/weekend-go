@@ -12,7 +12,23 @@ sigun/              경기도 시군 예약 (시군 하나에 파일 하나, 지
 data.json           수집 결과 (1,513건 + 휴양림 96곳)
 keys.json           인증키 (.gitignore에 있음, 절대 커밋 금지)
 keys.example.json   키 넣는 자리 견본
+nori/               어르신 놀이 한마당 (주말 앱과 무관한 별개 앱 — nori/README.md 참고)
+firestore.rules     nori가 쓰는 Firestore 보안 규칙 (주말 앱과 무관)
 ```
+
+## 이 저장소에 같이 있는 것 — 어르신 놀이 한마당
+
+`nori/` 는 **주말 앱과 아무 상관 없는 별개의 앱**이다. 어르신 행사에서 부스 일곱 곳 중 세 곳을
+돌면 상품 암호가 나오는 도장 모으기 앱이고, 저장소만 같이 쓴다. GitHub Pages가 저장소 전체를
+띄우기 때문에 폴더만 넣으면 `.../weekend-go/nori/` 주소가 설정 없이 생겨서 여기 얹었다.
+
+**설명·운영 방법·함정은 전부 `nori/README.md` 에 있다.** 이 문서에는 더 적지 않는다.
+다만 두 가지는 여기서도 알고 있어야 한다.
+
+- `nori`는 **Firestore를 쓴다.** 루트의 `firestore.rules` 와 `firebase.json`의 `firestore` 항목이
+  그것 때문에 있다. 주말 앱의 키즈카페 함수와는 별개다.
+- Firebase 프로젝트는 같은 `weekend-go-1` 이지만 **소유 계정이 anthem82@gmail.com** 이다.
+  CLI에 `--account anthem82@gmail.com` 을 붙이지 않으면 프로젝트가 안 보인다.
 
 미리보기가 필요하면 — `index.html`의 `<script>` 앞에 `window.__DATA__`로 data.json을
 끼워 넣어 임시 파일을 만들고, 보고 나면 지운다. 자료가 박힌 사본을 남겨두면 data.json을
