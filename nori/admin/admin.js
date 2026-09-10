@@ -41,7 +41,10 @@ async function loadData() {
 function render(data) {
   app.innerHTML = `
     <p class="title small">어울림 한마당 관리</p>
-    <button class="big-btn ghost" id="refresh">새로고침</button>
+    <div class="admin-top">
+      <button class="big-btn ghost" id="refresh">새로고침</button>
+      <a class="big-btn ghost" href="../print/" target="_blank" rel="noopener">QR 인쇄판</a>
+    </div>
 
     <div class="card admin-card">
       <p class="count">총 참여 인원 <strong>${data.total}</strong>명</p>
@@ -55,6 +58,15 @@ function render(data) {
           <span>${b.name}</span>
           <strong>${data.boothCounts[b.code]}</strong>
         </div>`).join('')}
+    </div>
+
+    <div class="card admin-card">
+      <p class="step">놀이 미리보기</p>
+      <p class="admin-note">새 탭에서 열립니다. 도장은 찍히지 않습니다.</p>
+      <div class="admin-links">
+        ${BOOTHS.map((b) => `
+          <a href="../?g=${b.code}&preview=1" target="_blank" rel="noopener">${b.name}</a>`).join('')}
+      </div>
     </div>
 
     <div class="card admin-card">

@@ -14,6 +14,7 @@ const state = {
   number: null,
   stamps: {},
   booth: null,
+  preview: false,
 };
 
 const stampCount = () => Object.keys(state.stamps).length;
@@ -25,8 +26,12 @@ function esc(s) {
 
 // ---------------- 시작 ----------------
 async function boot() {
-  const code = new URL(location.href).searchParams.get('g');
-  state.booth = findBooth(code);
+  const params = new URL(location.href).searchParams;
+  state.booth = findBooth(params.get('g'));
+  state.preview = params.get('preview') === '1';
+
+  // 관리 페이지에서 온 미리보기 - 번호도 도장도 없이 놀이만 열어 본다
+  if (state.preview && state.booth) return startGame(state.booth);
 
   const saved = savedNumber();
   if (!saved) return showWelcome();
@@ -142,6 +147,7 @@ async function startGame(booth) {
 }
 
 async function finishGame(booth) {
+  if (state.preview) return showPreviewEnd(booth);
   if (state.stamps[booth.code]) return showStampResult(booth, false);
   try {
     state.stamps = await addStamp(state.number, booth.code, state.stamps);
@@ -149,6 +155,17 @@ async function finishGame(booth) {
   } catch (e) {
     showError('도장을 저장하지 못했습니다', '직원에게 말씀해 주세요');
   }
+}
+
+function showPreviewEnd(booth) {
+  app.innerHTML = `
+    <div class="card">
+      <h2 class="title small">${esc(booth.name)}</h2>
+      <p class="lead">미리보기입니다
+도장은 찍히지 않았습니다</p>
+      <button class="big-btn primary" id="again">한 번 더 보기</button>
+    </div>`;
+  document.getElementById('again').onclick = () => startGame(booth);
 }
 
 function showStampResult(booth, isNew) {
