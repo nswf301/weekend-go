@@ -475,6 +475,55 @@ body {
 .admin-row:last-child { border-bottom: none; }
 .admin-row strong { font-size: 20px; color: var(--point-dark); }
 
+.admin-top {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-top > * {
+  flex: 1;
+  width: auto;
+}
+
+.admin-top a.big-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.admin-note {
+  margin: 4px 0 10px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.admin-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.admin-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+  padding: 10px 8px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  word-break: keep-all;
+}
+
+.admin-links a:active { background: #f7efe9; }
+
 .admin-search {
   display: flex;
   gap: 8px;
