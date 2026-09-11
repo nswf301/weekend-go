@@ -24,13 +24,13 @@ export const CONFIG = {
 //           카메라가 안 되는 폰을 위한 대비책이다. 겹치면 안 된다.
 // -----------------------------------------------------------
 export const BOOTHS = [
-  { code: 'yut',     name: '윷 던지기',   pin: '1101' },
-  { code: 'bok',     name: '복주머니 뽑기', pin: '1202' },
-  { code: 'rps',     name: '가위바위보',  pin: '1303' },
-  { code: 'quiz',    name: '추억 퀴즈',   pin: '1404' },
-  { code: 'ladder',  name: '사다리타기',  pin: '1505' },
-  { code: 'match',   name: '짝 맞추기',   pin: '1606' },
-  { code: 'fortune', name: '오늘의 운세', pin: '1707' },
+  { code: 'proverb', name: '속담 잇기',      pin: '1101' },
+  { code: 'market',  name: '장보기 셈',      pin: '1202' },
+  { code: 'rps',     name: '가위바위보',     pin: '1303' },
+  { code: 'quiz',    name: '추억 퀴즈',      pin: '1404' },
+  { code: 'memory',  name: '순서 기억하기',  pin: '1505' },
+  { code: 'match',   name: '짝 맞추기',      pin: '1606' },
+  { code: 'odd',     name: '다른 하나 찾기', pin: '1707' },
 ];
 
 export function findBooth(code) {

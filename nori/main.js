@@ -6,6 +6,7 @@
 import { CONFIG, BOOTHS, findBooth, findBoothByPin } from './config.js';
 import { savedNumber, issueNumber, loadStamps, resumeNumber, addStamp } from './player.js';
 import { scanOnce, boothCodeFrom } from './scan.js';
+import { PACE, enter } from './pace.js';
 
 const app = document.getElementById('app');
 document.title = CONFIG.title;
@@ -17,11 +18,19 @@ const state = {
   preview: false,
 };
 
-const stampCount = () => Object.keys(state.stamps).length;
+// 옛 부스 코드로 남은 시험 도장이 섞이지 않게, 지금 BOOTHS에 있는 코드만 센다.
+const stampCount = () => BOOTHS.filter((b) => state.stamps[b.code]).length;
 const isDone = () => stampCount() >= CONFIG.needStamps;
 
 function esc(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+// 화면을 그리고 서서히 나타나게 한다. buttonDelay를 넘기면 그만큼
+// 버튼이 더 늦게 나타난다(도장 "쿵" 뒤에 버튼을 보여줄 때 쓴다).
+function show(html, buttonDelay) {
+  app.innerHTML = html;
+  enter(app.firstElementChild, buttonDelay);
 }
 
 // ---------------- 시작 ----------------
@@ -55,14 +64,14 @@ function routeAfterNumber() {
 // ---------------- 처음 오신 분 ----------------
 function showWelcome() {
   const where = state.booth ? `${esc(state.booth.name)} 부스입니다` : '';
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h1 class="title">${esc(CONFIG.title)}</h1>
       ${where ? `<p class="lead">${where}</p>` : ''}
       <p class="lead">놀이 ${CONFIG.needStamps}가지를 하시면\n선물을 드립니다</p>
       <button class="big-btn primary" id="start">시작하기</button>
       <button class="big-btn ghost" id="resume">번호를 이미 받으셨어요</button>
-    </div>`;
+    </div>`);
 
   document.getElementById('start').onclick = async () => {
     setBusy('start', '번호를 받는 중입니다');
@@ -79,12 +88,12 @@ function showWelcome() {
 
 // ---------------- 번호 이어받기 ----------------
 function showResume() {
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">받으신 번호를\n넣어 주세요</h2>
       ${keypadHtml()}
       <button class="big-btn ghost" id="back">뒤로</button>
-    </div>`;
+    </div>`);
 
   bindKeypad(async (value, setMsg) => {
     setMsg('찾는 중입니다');
@@ -105,35 +114,35 @@ function showResume() {
 function showBoothIntro() {
   const booth = state.booth;
   if (state.stamps[booth.code]) {
-    app.innerHTML = `
+    show(`
       <div class="card">
         <h2 class="title small">${esc(booth.name)}</h2>
         <p class="lead">이 놀이는 이미 하셨습니다</p>
         ${progressHtml()}
         <button class="big-btn primary" id="again">한 번 더 놀기</button>
         ${nextButtonsHtml()}
-      </div>`;
+      </div>`);
     document.getElementById('again').onclick = () => startGame(booth);
     bindNextButtons();
     return;
   }
 
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">${esc(booth.name)}</h2>
       ${progressHtml()}
       <button class="big-btn primary" id="play">놀이 시작</button>
-    </div>`;
+    </div>`);
   document.getElementById('play').onclick = () => startGame(booth);
 }
 
 // ---------------- 게임 ----------------
 async function startGame(booth) {
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">${esc(booth.name)}</h2>
       <div id="game"></div>
-    </div>`;
+    </div>`);
   const host = document.getElementById('game');
   host.textContent = '준비 중입니다';
 
@@ -158,45 +167,60 @@ async function finishGame(booth) {
 }
 
 function showPreviewEnd(booth) {
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">${esc(booth.name)}</h2>
       <p class="lead">미리보기입니다
 도장은 찍히지 않았습니다</p>
       <button class="big-btn primary" id="again">한 번 더 보기</button>
-    </div>`;
+    </div>`);
   document.getElementById('again').onclick = () => startGame(booth);
 }
 
 function showStampResult(booth, isNew) {
-  if (isDone()) return showPrize();
+  if (isDone()) {
+    // 새로 받은 도장으로 다 찬 경우엔 쿵 화면을 먼저 보여준다.
+    if (isNew) return showStampBeforePrize(booth);
+    return showPrize();
+  }
   const left = CONFIG.needStamps - stampCount();
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">${isNew ? '도장을 받았습니다' : '수고하셨습니다'}</h2>
-      ${progressHtml()}
+      ${progressHtml(isNew ? booth.code : null)}
       <p class="lead">${left}가지만 더 하시면\n선물을 드립니다</p>
       ${nextButtonsHtml()}
-    </div>`;
+    </div>`, isNew ? PACE.fadeIn + PACE.stamp : undefined);
   bindNextButtons();
+}
+
+function showStampBeforePrize(booth) {
+  show(`
+    <div class="card">
+      <h2 class="title small">도장을 받았습니다</h2>
+      ${progressHtml(booth.code)}
+      <p class="lead">도장을 모두 모으셨습니다</p>
+      <button class="big-btn primary" id="toPrize">상품 암호 보기</button>
+    </div>`, PACE.fadeIn + PACE.stamp);
+  document.getElementById('toPrize').onclick = showPrize;
 }
 
 // ---------------- 현황(부스 없이 들어온 경우) ----------------
 function showProgress() {
   const left = CONFIG.needStamps - stampCount();
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">${esc(CONFIG.title)}</h2>
       ${progressHtml()}
       <p class="lead">${left}가지만 더 하시면\n선물을 드립니다</p>
       ${nextButtonsHtml()}
-    </div>`;
+    </div>`);
   bindNextButtons();
 }
 
 // ---------------- 상품 암호 ----------------
 function showPrize() {
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h1 class="title">다 모으셨습니다</h1>
       <div class="password-box">
@@ -205,7 +229,7 @@ function showPrize() {
       </div>
       <p class="ticket">참여 번호 <strong>${esc(state.number)}번</strong></p>
       <p class="notice">${esc(CONFIG.prizeNotice)}</p>
-    </div>`;
+    </div>`);
 }
 
 // ---------------- 다음 부스로 ----------------
@@ -224,13 +248,13 @@ function bindNextButtons() {
 }
 
 async function openScanner() {
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">부스의 QR을\n비춰 주세요</h2>
       <div class="scanner" id="cam"></div>
       <p class="feedback" id="msg"></p>
       <button class="big-btn ghost" id="cancel">그만두기</button>
-    </div>`;
+    </div>`);
   const cam = document.getElementById('cam');
   document.getElementById('cancel').onclick = () => {
     if (cam.__stopScan) cam.__stopScan();
@@ -256,24 +280,24 @@ async function openScanner() {
 }
 
 function showCameraFailed() {
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">카메라를 열지 못했습니다</h2>
       <p class="lead">부스에 붙어 있는\n네 자리 번호를 넣어 주세요</p>
       <button class="big-btn primary" id="bypin">부스 번호 넣기</button>
       <button class="big-btn ghost" id="back">뒤로</button>
-    </div>`;
+    </div>`);
   document.getElementById('bypin').onclick = showPinEntry;
   document.getElementById('back').onclick = routeAfterNumber;
 }
 
 function showPinEntry() {
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">부스에 붙은\n번호를 넣어 주세요</h2>
       ${keypadHtml()}
       <button class="big-btn ghost" id="back">뒤로</button>
-    </div>`;
+    </div>`);
   bindKeypad((value, setMsg) => {
     const booth = findBoothByPin(value);
     if (!booth) return setMsg('그런 부스 번호가 없습니다');
@@ -284,10 +308,14 @@ function showPinEntry() {
 }
 
 // ---------------- 공용 조각 ----------------
-function progressHtml() {
+// justCode를 넘기면 그 부스의 도장에 "쿵" 효과(.new)를 붙인다.
+function progressHtml(justCode) {
   const dots = BOOTHS.map((b) => {
     const on = state.stamps[b.code] ? ' on' : '';
-    return `<span class="stamp${on}">${esc(b.name)}</span>`;
+    const isNew = justCode && b.code === justCode;
+    const cls = `stamp${on}${isNew ? ' new' : ''}`;
+    const style = isNew ? ` style="animation-delay:${PACE.fadeIn}ms;animation-duration:${PACE.stamp}ms"` : '';
+    return `<span class="${cls}"${style}>${esc(b.name)}</span>`;
   }).join('');
   return `
     <p class="count">도장 <strong>${stampCount()}</strong>개 / ${CONFIG.needStamps}개</p>
@@ -335,12 +363,12 @@ function setBusy(id, text) {
 }
 
 function showError(title, sub) {
-  app.innerHTML = `
+  show(`
     <div class="card">
       <h2 class="title small">${esc(title)}</h2>
       <p class="lead">${esc(sub)}</p>
       <button class="big-btn primary" id="retry">다시 해보기</button>
-    </div>`;
+    </div>`);
   document.getElementById('retry').onclick = () => location.reload();
 }
 

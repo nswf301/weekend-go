@@ -23,7 +23,8 @@ async function loadData() {
   playersSnap.forEach((d) => {
     const data = d.data();
     const stamps = (data.stamps && typeof data.stamps === 'object') ? data.stamps : {};
-    const doneCodes = Object.keys(stamps).filter((code) => stamps[code]);
+    // 옛 부스 코드로 남은 시험 도장이 섞이지 않게, 지금 BOOTHS에 있는 코드만 센다.
+    const doneCodes = BOOTHS.filter((b) => stamps[b.code]).map((b) => b.code);
 
     if (doneCodes.length >= CONFIG.needStamps) prizeCount += 1;
     doneCodes.forEach((code) => {

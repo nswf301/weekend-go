@@ -2,6 +2,7 @@
 //  가위바위보 세 판.
 //  세 판을 겨루고 전적을 보여준다. 져도 도장은 받는다.
 // ===========================================================
+import { PACE, wait, enter } from '../pace.js';
 
 const HANDS = [
   { key: 'scissors', name: '가위' },
@@ -33,6 +34,7 @@ export function mount(host, done) {
         <p class="question">${win}승 ${draw > 0 ? `${draw}무 ` : ''}${lose}패</p>
         <p class="feedback">이기고 지는 것은 재미로 보시면 됩니다</p>
         <button class="big-btn primary" id="finish">도장 받기</button>`;
+      enter(host);
       host.querySelector('#finish').onclick = done;
       return;
     }
@@ -43,28 +45,46 @@ export function mount(host, done) {
       <div id="picks">
         ${HANDS.map((h) => `<button class="big-btn" data-k="${h.key}">${h.name}</button>`).join('')}
       </div>
-      <p class="feedback" id="word"></p>`;
+      <p class="feedback" id="word"></p>
+      <div id="buttons"></div>`;
+    enter(host);
 
     host.querySelectorAll('#picks button').forEach((btn) => {
       btn.onclick = () => playRound(btn.dataset.k);
     });
   }
 
-  function playRound(mine) {
+  async function playRound(mine) {
     host.querySelectorAll('#picks button').forEach((b) => { b.disabled = true; });
+    host.querySelector(`#picks button[data-k="${mine}"]`).classList.add('picked');
+
     const other = HANDS[Math.floor(Math.random() * HANDS.length)].key;
     const result = judge(mine, other);
     const myName = HANDS.find((h) => h.key === mine).name;
     const otherName = HANDS.find((h) => h.key === other).name;
+
+    const picksEl = host.querySelector('#picks');
+    picksEl.insertAdjacentHTML('afterend', '<p class="question" id="beat"></p>');
+    const beatEl = host.querySelector('#beat');
+
+    for (const word of ['가위…', '바위…', '보!']) {
+      beatEl.textContent = word;
+      // eslint-disable-next-line no-await-in-loop
+      await wait(PACE.rpsBeat);
+    }
+    beatEl.remove();
 
     let text;
     if (result === 1) { win += 1; text = `내 ${myName}, 상대 ${otherName} — 이겼습니다`; }
     else if (result === -1) { lose += 1; text = `내 ${myName}, 상대 ${otherName} — 졌습니다`; }
     else { draw += 1; text = `내 ${myName}, 상대 ${otherName} — 비겼습니다`; }
 
-    host.querySelector('#word').textContent = text;
     round += 1;
+    host.querySelector('#word').textContent = text;
 
-    setTimeout(render, 900);
+    const buttonsEl = host.querySelector('#buttons');
+    buttonsEl.innerHTML = `<button class="big-btn primary" id="next">${round >= 3 ? '결과 보기' : '다음 판'}</button>`;
+    enter(buttonsEl);
+    buttonsEl.querySelector('#next').onclick = render;
   }
 }
