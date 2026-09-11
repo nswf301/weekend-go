@@ -562,19 +562,17 @@ body {
   display: flex;
   justify-content: center;
   gap: 6px;
-  margin: 0 0 12px;
+  margin: 0 0 6px;
 }
 
 .q-pics img {
-  width: 22%;
-  max-width: 88px;
+  width: 56px;
   min-width: 0;
   height: auto;
 }
 
 .q-pics.one img {
-  width: 45%;
-  max-width: 150px;
+  width: 72px;
 }
 
 /* 그림 + 글자 보기(다른 하나 찾기) */
