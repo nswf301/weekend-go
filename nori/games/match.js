@@ -3,15 +3,24 @@
 //  카드 6장(3쌍)을 뒤집어 같은 낱말끼리 짝을 찾는다.
 //  시간 제한도 실패도 없다. 언제든 포기하고 도장을 받을 수 있다.
 //
-//  판은 처음 한 번만 그린다. 이후엔 카드 하나하나의 class·글자만
+//  판은 처음 한 번만 그린다. 이후엔 카드 하나하나의 class만
 //  바꿔서 뒤집기 효과가 그 카드에서만 재생되게 한다.
+//  앞면(그림+글자)은 처음부터 넣어 두고, 덮인 동안은 CSS로 감춘다
+//  (뒤집는 순간 그림을 새로 불러오느라 늦게 뜨지 않게).
 // ===========================================================
-import { PACE, enter } from '../pace.js';
+import { PACE, enter, keepInView } from '../pace.js';
 
-const WORDS = ['달', '꽃', '별'];
+const WORDS = [
+  { word: '달', pic: 'moon' },
+  { word: '꽃', pic: 'flower' },
+  { word: '별', pic: 'star' },
+];
+
+// 카드 앞면(그림 + 글자)
+const faceHtml = (c) => `<img class="cell-pic" src="pics/${c.pic}.svg" alt=""><span class="cell-name">${c.word}</span>`;
 
 export function mount(host, done) {
-  const deck = shuffle([...WORDS, ...WORDS].map((word, i) => ({ word, id: i })));
+  const deck = shuffle([...WORDS, ...WORDS].map((w, i) => ({ ...w, id: i })));
   const state = deck.map((c) => ({ ...c, faceUp: false, matched: false }));
   let flipped = [];
   let locked = false;
@@ -41,17 +50,16 @@ export function mount(host, done) {
     const shown = c.faceUp || c.matched;
     const cls = `match-card${shown ? ' open' : ''}${c.matched ? ' matched' : ''}`;
     const style = `transition:transform ${PACE.cardFlip}ms ease, opacity .8s ease, background .12s, border-color .12s`;
-    return `<button class="${cls}" data-i="${i}" style="${style}">${shown ? c.word : ''}</button>`;
+    return `<button class="${cls}" data-i="${i}" style="${style}">${faceHtml(c)}</button>`;
   }
 
-  // 카드 한 장을 뒤집는(또는 덮는) 효과. 절반 지점에서 글자를 바꿔 끼운다.
+  // 카드 한 장을 뒤집는(또는 덮는) 효과. 절반 지점에서 앞면을 보이거나 감춘다.
   function flipCard(i) {
     const btn = host.querySelector(`.match-card[data-i="${i}"]`);
     const c = state[i];
     const shown = c.faceUp || c.matched;
     btn.classList.add('flip');
     setTimeout(() => {
-      btn.textContent = shown ? c.word : '';
       btn.classList.toggle('open', shown);
     }, PACE.cardFlip / 2);
     setTimeout(() => {
@@ -72,6 +80,7 @@ export function mount(host, done) {
     const buttonsEl = host.querySelector('#buttons');
     buttonsEl.innerHTML = '<button class="big-btn primary" id="finish">도장 받기</button>';
     enter(buttonsEl);
+    keepInView(buttonsEl);
     buttonsEl.querySelector('#finish').onclick = done;
   }
 

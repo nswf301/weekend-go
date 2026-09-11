@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<defs><filter id="p" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB"><feDropShadow dx="1.2" dy="2.2" stdDeviation="1.1" flood-color="#5a3a22" flood-opacity="0.3"/></filter></defs>
+<polygon points="56,84 65,84 65,106 57,106" fill="#aa6f2c" filter="url(#p)"/>
+<polygon points="86,84 95,84 95,106 87,106" fill="#aa6f2c" filter="url(#p)"/>
+<polygon points="104,50 109,53 111,78 107,78 106,58" fill="#aa6f2c" filter="url(#p)"/>
+<polygon points="104,76 111,76 113,88 108,93 103,88" fill="#7a4f2e" filter="url(#p)"/>
+<polygon points="44,44 56,37 78,35 96,38 105,46 108,60 106,76 98,86 80,90 60,90 48,86 42,74 40,58" fill="#cf9146" filter="url(#p)"/>
+<polygon points="58,40 78,38 94,41 101,47 88,46 74,44 60,45" fill="#e6b46c"/>
+<polygon points="48,80 62,86 80,86 98,80 96,86 80,90 60,90 48,86" fill="#aa6f2c"/>
+<polygon points="46,82 56,82 56,108 47,108" fill="#cf9146" filter="url(#p)"/>
+<polygon points="94,80 104,78 104,108 95,108" fill="#cf9146" filter="url(#p)"/>
+<g fill="#5e3b20">
+  <polygon points="47,103 56,103 56,108 47,108"/>
+  <polygon points="95,103 104,103 104,108 95,108"/>
+  <polygon points="57,101 65,101 65,106 57,106"/>
+  <polygon points="87,101 95,101 95,106 87,106"/>
+</g>
+<polygon points="18,42 8,39 6,46 16,49" fill="#aa6f2c" filter="url(#p)"/>
+<polygon points="44,42 54,39 56,46 46,49" fill="#aa6f2c" filter="url(#p)"/>
+<polygon points="16,43 10,41.5 9,45 15,47" fill="#e6b46c"/>
+<polygon points="46,43 52,41.5 53,45 47,47" fill="#e6b46c"/>
+<polygon points="17,38 25,33 37,33 45,38 47,48 44,64 41,74 36,80 26,80 21,74 18,64 15,48" fill="#cf9146" filter="url(#p)"/>
+<polygon points="19,42 25,37 31,37 24,46 20,56" fill="#e6b46c"/>
+<polygon points="17,64 45,64 46,72 40,81 22,81 16,72" fill="#f3d7ae" filter="url(#p)"/>
+<polygon points="22,36 15,33 11,26 12,19 16,20 17,27 25,31" fill="#fbefcf" filter="url(#p)"/>
+<polygon points="40,36 47,33 51,26 50,19 46,20 45,27 37,31" fill="#fbefcf" filter="url(#p)"/>
+</svg>

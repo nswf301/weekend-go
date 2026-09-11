@@ -42,3 +42,23 @@ export function enter(root, buttonDelay = PACE.buttonDelay) {
     buttons.forEach((b) => b.classList.remove('wait'));
   }, buttonDelay);
 }
+
+// 답을 고른 뒤 새로 나타난 버튼 칸(el)이 화면 아래로 밀려 안 보이면, 버튼이 나타나는
+// 순간(buttonDelay 끝) 부드럽게 스크롤해 보이게 한다. 어르신은 스크롤할 줄 모를 수 있다.
+// 화면 전체가 새로 뜰 때는 쓰지 않는다 — 그때는 toTop()으로 맨 위가 보여야 한다.
+export function keepInView(el, buttonDelay = PACE.buttonDelay) {
+  if (!el) return;
+  setTimeout(() => {
+    if (!el.isConnected) return;
+    const r = el.getBoundingClientRect();
+    if (r.top >= 0 && r.bottom <= window.innerHeight) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'end' });
+  }, buttonDelay);
+}
+
+// 새 화면(새 문제·새 판)을 그릴 때 맨 위부터 보이게 한다.
+// keepInView로 내려간 스크롤이 다음 화면까지 남아 제목·문제가 가려지지 않게.
+export function toTop() {
+  if (window.scrollY > 0) window.scrollTo(0, 0);
+}

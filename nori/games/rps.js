@@ -2,13 +2,16 @@
 //  가위바위보 세 판.
 //  세 판을 겨루고 전적을 보여준다. 져도 도장은 받는다.
 // ===========================================================
-import { PACE, wait, enter } from '../pace.js';
+import { PACE, wait, enter, keepInView, toTop } from '../pace.js';
 
 const HANDS = [
-  { key: 'scissors', name: '가위' },
-  { key: 'rock', name: '바위' },
-  { key: 'paper', name: '보' },
+  { key: 'scissors', name: '가위', pic: 'hand-scissors' },
+  { key: 'rock', name: '바위', pic: 'hand-rock' },
+  { key: 'paper', name: '보', pic: 'hand-paper' },
 ];
+
+// 손 하나의 그림 + 글자
+const handInner = (h) => `<img class="cell-pic" src="pics/${h.pic}.svg" alt=""><span class="cell-name">${h.name}</span>`;
 
 // a가 b를 이기면 1, 지면 -1, 비기면 0
 function judge(a, b) {
@@ -28,6 +31,7 @@ export function mount(host, done) {
   render();
 
   function render() {
+    toTop();
     if (round >= 3) {
       host.innerHTML = `
         <p class="lead">세 판이 모두 끝났습니다</p>
@@ -42,8 +46,8 @@ export function mount(host, done) {
     host.innerHTML = `
       <p class="step">${round + 1}판째 / 3판</p>
       <p class="lead">가위, 바위, 보 중 하나를 내세요</p>
-      <div id="picks">
-        ${HANDS.map((h) => `<button class="big-btn" data-k="${h.key}">${h.name}</button>`).join('')}
+      <div id="picks" class="rps-picks">
+        ${HANDS.map((h) => `<button class="big-btn" data-k="${h.key}">${handInner(h)}</button>`).join('')}
       </div>
       <p class="feedback" id="word"></p>
       <div id="buttons"></div>`;
@@ -55,16 +59,20 @@ export function mount(host, done) {
   }
 
   async function playRound(mine) {
-    host.querySelectorAll('#picks button').forEach((b) => { b.disabled = true; });
-    host.querySelector(`#picks button[data-k="${mine}"]`).classList.add('picked');
-
     const other = HANDS[Math.floor(Math.random() * HANDS.length)].key;
     const result = judge(mine, other);
     const myName = HANDS.find((h) => h.key === mine).name;
     const otherName = HANDS.find((h) => h.key === other).name;
 
-    const picksEl = host.querySelector('#picks');
-    picksEl.insertAdjacentHTML('afterend', '<p class="question" id="beat"></p>');
+    // 고르기 줄(안내 문장·세 칸)을 걷고 그 자리에 나 / 상대 두 칸을 띄운다.
+    // 카운트다운은 상대 칸의 그림 자리에서 하고, "보!" 다음에 상대 손이 나타난다.
+    host.querySelector('.lead').remove();
+    host.querySelector('#picks').outerHTML = `
+      <div class="rps-vs" id="vs">
+        <div class="rps-side"><p class="rps-who">나</p>${handInner(HANDS.find((h) => h.key === mine))}</div>
+        <div class="rps-side" id="other"><p class="rps-who">상대</p><div class="rps-beat" id="beat"></div><span class="cell-name">&nbsp;</span></div>
+      </div>`;
+    enter(host.querySelector('#vs'));
     const beatEl = host.querySelector('#beat');
 
     for (const word of ['가위…', '바위…', '보!']) {
@@ -72,7 +80,7 @@ export function mount(host, done) {
       // eslint-disable-next-line no-await-in-loop
       await wait(PACE.rpsBeat);
     }
-    beatEl.remove();
+    host.querySelector('#other').innerHTML = `<p class="rps-who">상대</p>${handInner(HANDS.find((h) => h.key === other))}`;
 
     let text;
     if (result === 1) { win += 1; text = `내 ${myName}, 상대 ${otherName} — 이겼습니다`; }
@@ -85,6 +93,7 @@ export function mount(host, done) {
     const buttonsEl = host.querySelector('#buttons');
     buttonsEl.innerHTML = `<button class="big-btn primary" id="next">${round >= 3 ? '결과 보기' : '다음 판'}</button>`;
     enter(buttonsEl);
+    keepInView(buttonsEl);
     buttonsEl.querySelector('#next').onclick = render;
   }
 }

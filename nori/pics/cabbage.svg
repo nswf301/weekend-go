@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<defs><filter id="p" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB"><feDropShadow dx="1.2" dy="2.2" stdDeviation="1.1" flood-color="#5a3a22" flood-opacity="0.3"/></filter></defs>
+<polygon points="30,62 26,40 34,22 46,16 54,10 62,14 70,9 80,16 90,24 96,42 90,62" fill="#3e9d5d" filter="url(#p)"/>
+<polygon points="37,62 35,44 43,30 52,24 60,29 68,24 77,30 85,44 83,62" fill="#6cc47d" filter="url(#p)"/>
+<polygon points="36,58 84,58 86,76 80,94 70,104 50,104 40,94 34,76" fill="#fbefcf" filter="url(#p)"/>
+<polygon points="38,58 82,58 79,66 41,66" fill="#f5dc86" filter="url(#p)"/>
+<g fill="#ecdcae">
+  <polygon points="58.5,68 61.5,68 61,101 59,101"/>
+  <polygon points="46,69 49,69 53,99 50,99"/>
+  <polygon points="71,69 74,69 70,99 67,99"/>
+</g>
+</svg>

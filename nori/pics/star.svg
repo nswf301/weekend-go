@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<defs><filter id="p" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB"><feDropShadow dx="1.2" dy="2.2" stdDeviation="1.1" flood-color="#5a3a22" flood-opacity="0.3"/></filter></defs>
+<polygon points="60,13 72.3,46 107.6,47.5 80,69.5 89.4,103.5 60,84 30.6,103.5 40,69.5 12.4,47.5 47.7,46" fill="#ee8a2a" filter="url(#p)"/>
+<polygon points="60,24 70,50.2 98,51.6 76.2,69.3 83.5,96.4 60,81 36.5,96.4 43.8,69.3 22,51.6 50,50.2" fill="#f2b634" filter="url(#p)"/>
+<polygon points="60,28 60,64 26,52.5 50.5,52" fill="#f7d06a"/>
+</svg>

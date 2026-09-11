@@ -29,12 +29,17 @@ scan.js         앱 안에서 QR 찍기
 style.css       디자인 전부
 quiz-data.js    추억 퀴즈 문항
 games/          놀이 하나에 파일 하나 (proverb, market, rps, quiz, memory, match, odd)
+pics/           그림 (색종이 오려붙이기 SVG, 한 파일에 그림 하나)
 admin/          관리 화면
 print/          부스 QR 인쇄판 (A4 한 장 = 부스 하나)
 ```
 
 놀이를 고칠 땐 `games/` 안의 그 파일 하나만 열면 된다. 놀이를 더 붙이려면
 `games/새코드.js`를 만들고 `config.js`의 `BOOTHS`에 한 줄 넣으면 끝이다.
+
+**그림** — `pics/이름.svg`. 코드에서는 `.svg`를 뺀 이름으로 부른다(`apple`, `hand-rock`,
+부스 대표 그림은 `booth-부스코드`). 부스 첫 화면 그림은 `config.js` `BOOTHS`의 `pic`으로 정하고,
+문제 위 그림·그림 보기는 `choice.js` 맨 위 주석대로 문제에 `pics`·`{ text, pic }`를 넣는다.
 
 **게임 파일 규칙** — `export function mount(host, done)` 하나만 내보낸다.
 `host`에 화면을 그리고, 끝나면 "도장 받기" 버튼(`id="finish"`)의 onclick으로 `done`을 부른다.

@@ -22,15 +22,16 @@ export const CONFIG = {
 //  - name : 화면에 보이는 부스 이름
 //  - pin  : 부스에 크게 붙여둘 네 자리 숫자.
 //           카메라가 안 되는 폰을 위한 대비책이다. 겹치면 안 된다.
+//  - pic  : 부스 첫 화면에 크게 나오는 그림. pics/ 폴더 파일 이름(.svg 뺀 것)
 // -----------------------------------------------------------
 export const BOOTHS = [
-  { code: 'proverb', name: '속담 잇기',      pin: '1101' },
-  { code: 'market',  name: '장보기 셈',      pin: '1202' },
-  { code: 'rps',     name: '가위바위보',     pin: '1303' },
-  { code: 'quiz',    name: '추억 퀴즈',      pin: '1404' },
-  { code: 'memory',  name: '순서 기억하기',  pin: '1505' },
-  { code: 'match',   name: '짝 맞추기',      pin: '1606' },
-  { code: 'odd',     name: '다른 하나 찾기', pin: '1707' },
+  { code: 'proverb', name: '속담 잇기',      pin: '1101', pic: 'booth-proverb' },
+  { code: 'market',  name: '장보기 셈',      pin: '1202', pic: 'booth-market' },
+  { code: 'rps',     name: '가위바위보',     pin: '1303', pic: 'booth-rps' },
+  { code: 'quiz',    name: '추억 퀴즈',      pin: '1404', pic: 'booth-quiz' },
+  { code: 'memory',  name: '순서 기억하기',  pin: '1505', pic: 'booth-memory' },
+  { code: 'match',   name: '짝 맞추기',      pin: '1606', pic: 'booth-match' },
+  { code: 'odd',     name: '다른 하나 찾기', pin: '1707', pic: 'booth-odd' },
 ];
 
 export function findBooth(code) {
