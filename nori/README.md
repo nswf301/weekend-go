@@ -22,11 +22,13 @@
 index.html      틀 (main.js만 불러온다)
 config.js       행사 이름·암호·부스 목록  ← 내용을 바꿀 땐 여기만
 main.js         화면 흐름 (번호 확인 → 놀이 → 도장 → 다음 부스)
+pace.js         놀이 속도(시간 값) 모음  ← 전체 속도를 바꿀 땐 여기만
+choice.js       문제풀이 공용 흐름 (속담·장보기·추억 퀴즈·다른 하나 찾기가 같이 쓴다)
 player.js       참여 번호 발급, 도장 저장·복구 (Firebase)
 scan.js         앱 안에서 QR 찍기
 style.css       디자인 전부
 quiz-data.js    추억 퀴즈 문항
-games/          놀이 하나에 파일 하나 (yut, bok, rps, quiz, ladder, match, fortune)
+games/          놀이 하나에 파일 하나 (proverb, market, rps, quiz, memory, match, odd)
 admin/          관리 화면
 print/          부스 QR 인쇄판 (A4 한 장 = 부스 하나)
 ```
