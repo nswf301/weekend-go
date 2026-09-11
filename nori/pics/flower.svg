@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<defs><filter id="p" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB"><feDropShadow dx="1.2" dy="2.2" stdDeviation="1.1" flood-color="#5a3a22" flood-opacity="0.3"/></filter></defs>
+<polygon points="58,60 62,60 62,112 58,112" fill="#3e9d5d" filter="url(#p)"/>
+<polygon points="60,98 72,86 90,82 82,96" fill="#3e9d5d" filter="url(#p)"/>
+<polygon points="60,98 90,82 82,96" fill="#6cc47d"/>
+<polygon points="60,92 48,80 30,78 38,92" fill="#6cc47d" filter="url(#p)"/>
+<g fill="#ef7aa0" filter="url(#p)">
+  <circle cx="60" cy="26" r="16"/>
+  <circle cx="79" cy="39.8" r="16"/>
+  <circle cx="71.8" cy="62.2" r="16"/>
+  <circle cx="48.2" cy="62.2" r="16"/>
+  <circle cx="41" cy="39.8" r="16"/>
+</g>
+<g fill="#f7b3c8" filter="url(#p)">
+  <circle cx="66.5" cy="37.1" r="9"/>
+  <circle cx="70.5" cy="49.4" r="9"/>
+  <circle cx="60" cy="57" r="9"/>
+  <circle cx="49.5" cy="49.4" r="9"/>
+  <circle cx="53.5" cy="37.1" r="9"/>
+</g>
+<circle cx="60" cy="46" r="8" fill="#f2b634" filter="url(#p)"/>
+</svg>

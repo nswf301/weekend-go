@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<defs><filter id="p" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB"><feDropShadow dx="1.2" dy="2.2" stdDeviation="1.1" flood-color="#5a3a22" flood-opacity="0.3"/></filter></defs>
+<polygon points="22,56 24.9,41.5 33.1,29.1 45.5,20.9 60,18 74.5,20.9 86.9,29.1 95.1,41.5 98,56 91,56 88.6,44.1 81.9,34.1 71.9,27.4 60,25 48.1,27.4 38.1,34.1 31.4,44.1 29,56" fill="#7a4f2e" filter="url(#p)"/>
+<polygon points="38,62 46,62 36,32 29,34" fill="#f7f3e3" filter="url(#p)"/>
+<polygon points="29,34 36,32 26,8 20,10" fill="#3e9d5d" filter="url(#p)"/>
+<polygon points="32,34 37,33 41,10 35,9" fill="#6cc47d" filter="url(#p)"/>
+<polygon points="66,37 69,37 72,29 69,28" fill="#7a4f2e" filter="url(#p)"/>
+<polygon points="70,32 78,26 85,28 76,34" fill="#3e9d5d" filter="url(#p)"/>
+<polygon points="68,36 76,36 82,42 84,52 80,62 56,62 52,52 54,42 60,36" fill="#e9573f" filter="url(#p)"/>
+<polygon points="76,40 82,46 82,56 78,60 76,50" fill="#c4412e"/>
+<polygon points="58,44 62,39 66,38 62,46" fill="#f58a73"/>
+<polygon points="20,58 100,58 92,104 28,104" fill="#a8744a" filter="url(#p)"/>
+<g fill="#7a4f2e">
+  <polygon points="22,70 98,70 97,76 23,76"/>
+  <polygon points="25,86 95,86 94,92 26,92"/>
+</g>
+<polygon points="16,53 104,53 104,62 16,62" fill="#7a4f2e" filter="url(#p)"/>
+<polygon points="18,54 102,54 102,56 18,56" fill="#c99467"/>
+</svg>

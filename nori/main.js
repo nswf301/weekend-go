@@ -6,7 +6,7 @@
 import { CONFIG, BOOTHS, findBooth, findBoothByPin } from './config.js';
 import { savedNumber, issueNumber, loadStamps, resumeNumber, addStamp } from './player.js';
 import { scanOnce, boothCodeFrom } from './scan.js';
-import { PACE, enter } from './pace.js';
+import { PACE, enter, toTop } from './pace.js';
 
 const app = document.getElementById('app');
 document.title = CONFIG.title;
@@ -30,6 +30,7 @@ function esc(s) {
 // 버튼이 더 늦게 나타난다(도장 "쿵" 뒤에 버튼을 보여줄 때 쓴다).
 function show(html, buttonDelay) {
   app.innerHTML = html;
+  toTop(); // 새 화면은 맨 위부터 보인다
   enter(app.firstElementChild, buttonDelay);
 }
 
@@ -117,6 +118,7 @@ function showBoothIntro() {
     show(`
       <div class="card">
         <h2 class="title small">${esc(booth.name)}</h2>
+        ${booth.pic ? `<img class="booth-pic" src="pics/${esc(booth.pic)}.svg" alt="">` : ''}
         <p class="lead">이 놀이는 이미 하셨습니다</p>
         ${progressHtml()}
         <button class="big-btn primary" id="again">한 번 더 놀기</button>
@@ -130,6 +132,7 @@ function showBoothIntro() {
   show(`
     <div class="card">
       <h2 class="title small">${esc(booth.name)}</h2>
+      ${booth.pic ? `<img class="booth-pic" src="pics/${esc(booth.pic)}.svg" alt="">` : ''}
       ${progressHtml()}
       <button class="big-btn primary" id="play">놀이 시작</button>
     </div>`);

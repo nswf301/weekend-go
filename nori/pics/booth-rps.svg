@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<defs><filter id="p" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB"><feDropShadow dx="1.2" dy="2.2" stdDeviation="1.1" flood-color="#5a3a22" flood-opacity="0.3"/></filter></defs>
+<g transform="translate(-3 5) scale(0.45)">
+<polygon points="36,50 84,50 90,60 90,84 82,96 40,96 32,84 30,62" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="34,58 36,44 42,39 48,40 50,46 50,62 36,64" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="49,52 51,38 57,34 63,35 65,40 65,60 50,60" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="64,52 66,38 72,34 78,36 80,41 80,60 65,60" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="79,56 81,44 86,41 91,44 92,50 91,64 80,64" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="34,60 91,60 91,68 34,68" fill="#e0a877"/>
+<polygon points="30,74 38,66 60,64 74,66 78,72 72,78 50,80 34,82" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="36,92 84,92 88,112 32,112" fill="#4f8fc9" filter="url(#p)"/>
+<polygon points="36,92 84,92 85,98 35,98" fill="#8fbfe6" filter="url(#p)"/>
+</g>
+<g transform="translate(69 3) scale(0.45)">
+<polygon points="44,84 30,70 20,58 19,51 24,48 30,51 40,62 50,72" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="42,62 33,30 33,22 38,18 43,21 53,58" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="52,58 51,20 54,12 60,11 64,19 64,58" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="63,58 69,24 73,18 79,19 81,25 74,60" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="72,64 81,40 85,35 90,36 91,42 83,68" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="40,60 76,58 84,66 84,82 80,96 42,96 36,84 36,70" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="70,62 82,66 82,82 78,94 72,94 76,80 76,68" fill="#e0a877"/>
+<polygon points="36,92 84,92 88,112 32,112" fill="#4f8fc9" filter="url(#p)"/>
+<polygon points="36,92 84,92 85,98 35,98" fill="#8fbfe6" filter="url(#p)"/>
+</g>
+<g transform="translate(12 20) scale(0.8)">
+<polygon points="40,62 31,30 31,22 36,18 41,21 51,58" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="54,58 69,22 73,17 79,19 80,26 66,62" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="36,56 82,54 88,64 88,84 82,96 42,96 34,86 32,68" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="62,62 64,52 70,48 76,50 78,56 78,64" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="76,64 78,56 83,53 88,56 89,62 88,70" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="62,64 89,64 89,70 62,70" fill="#e0a877"/>
+<polygon points="32,76 40,68 62,66 76,70 78,76 70,82 48,82 34,84" fill="#f6c79b" filter="url(#p)"/>
+<polygon points="36,92 84,92 88,112 32,112" fill="#4f8fc9" filter="url(#p)"/>
+<polygon points="36,92 84,92 85,98 35,98" fill="#8fbfe6" filter="url(#p)"/>
+</g>
+</svg>
