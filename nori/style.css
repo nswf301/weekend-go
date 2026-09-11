@@ -503,6 +503,7 @@ body {
 
 .admin-input {
   flex: 1;
+  min-width: 0; /* 좁은 폰에서 입력칸이 안 줄어들어 화면 밖으로 밀리던 것 */
   min-height: 56px;
   padding: 10px 14px;
   border: 2px solid var(--line);
