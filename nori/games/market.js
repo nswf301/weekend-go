@@ -13,7 +13,7 @@ const QUESTIONS = [
   },
   {
     pics: ['money'],
-    question: '10,000원을 내고\n6,000원어치를 샀습니다\n거스름돈은 얼마일까요?',
+    question: '10,000원을 내고\n6,000원어치를 사면\n거스름돈은?',
     choices: ['4,000원', '3,000원', '5,000원'],
     answer: 0,
   },
@@ -26,5 +26,5 @@ const QUESTIONS = [
 ];
 
 export function mount(host, done) {
-  mountChoice(host, done, { lead: '장보기 셈을 해 보세요', questions: QUESTIONS });
+  mountChoice(host, done, { questions: QUESTIONS });
 }
