@@ -1,3 +1,16 @@
+@font-face {
+    font-family: 'NexonMaplestory';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/MaplestoryOTFLight.woff') format('woff');
+    font-weight: 300;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'NexonMaplestory';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/MaplestoryOTFBold.woff') format('woff');
+    font-weight: 700;
+    font-display: swap;
+}
+
 :root {
   --bg: #fdf7f2;
   --card: #ffffff;
@@ -16,7 +29,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+  font-family: 'NexonMaplestory', -apple-system, 'Malgun Gothic', sans-serif;
   font-size: 18px;
   line-height: 1.6;
 }
@@ -96,6 +109,12 @@ body {
 .big-btn:active { background: #f7efe9; }
 .big-btn:disabled { cursor: default; }
 
+/* 자리만 미리 차지하고 안 보이게(레이아웃은 유지, wait와는 별개) */
+.reserve {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .big-btn.picked {
   border-color: var(--point);
   background: #fdeeec;
@@ -123,6 +142,23 @@ body {
   font-size: 22px;
   min-height: 34px;
   word-break: keep-all;
+}
+
+/* 문제풀이(choice.js)에서 정답 공개 전/후 문구를 한 칸에 겹쳐 놓아 칸 높이가
+   안 변하게 한다. 셋 중 가장 긴 것에 칸 높이가 맞춰진다. */
+.feedback.stack {
+  display: grid;
+}
+
+.feedback.stack > .fx {
+  grid-area: 1 / 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.feedback.stack > .fx.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .badge {

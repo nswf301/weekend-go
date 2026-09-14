@@ -33,6 +33,11 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
     const picsHtml = q.pics
       ? `<div class="q-pics${q.pics.length === 1 ? ' one' : ''}">${q.pics.map((p) => `<img src="pics/${p}.svg" alt="">`).join('')}</div>`
       : '';
+    // 정답 공개 전/뒤에 나올 수 있는 문구 세 가지를 미리 다 그려 한 칸에 겹쳐 둔다.
+    // 오답 문구는 무엇을 골랐든 같다(정답이 무엇인지만 알려주므로).
+    const explainHtml = q.explain ? `<br>${q.explain}` : '';
+    const correctHtml = `<span class="badge ok">정답입니다</span>${explainHtml}`;
+    const wrongHtml = `<span class="badge no">아쉬워요</span> 정답은 "${choiceText(q.choices[q.answer])}" 입니다${explainHtml}`;
     host.innerHTML = `
       ${lead ? `<p class="lead">${lead}</p>` : ''}
       <p class="step">${idx + 1}번째 / ${questions.length}문제</p>
@@ -41,13 +46,18 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
       <div id="choices" class="${grid || withPics ? 'choice-grid' : ''}">
         ${q.choices.map((c, i) => choiceHtml(c, i)).join('')}
       </div>
-      <p class="feedback" id="word"></p>
-      <div id="buttons"></div>`;
+      <p class="feedback stack" id="word">
+        <span class="fx fx-suspense">정답은…</span>
+        <span class="fx fx-correct">${correctHtml}</span>
+        <span class="fx fx-wrong">${wrongHtml}</span>
+      </p>
+      <div id="buttons"><button class="big-btn primary reserve" id="next">다음 문제</button></div>`;
     enter(host);
 
     host.querySelectorAll('#choices button').forEach((btn) => {
       btn.onclick = () => pick(Number(btn.dataset.i));
     });
+    host.querySelector('#next').onclick = () => { idx += 1; render(); };
   }
 
   async function pick(i) {
@@ -57,24 +67,23 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
     choicesWrap.children[i].classList.add('picked');
 
     const wordEl = host.querySelector('#word');
-    wordEl.textContent = '정답은…';
+    wordEl.querySelector('.fx-suspense').classList.add('show');
 
     await wait(PACE.suspense);
 
     choicesWrap.children[q.answer].classList.add('correct');
-    const explainHtml = q.explain ? `<br>${q.explain}` : '';
+    wordEl.querySelector('.fx-suspense').classList.remove('show');
     if (i === q.answer) {
       correctCount += 1;
-      wordEl.innerHTML = `<span class="badge ok">정답입니다</span>${explainHtml}`;
+      wordEl.querySelector('.fx-correct').classList.add('show');
     } else {
-      wordEl.innerHTML = `<span class="badge no">아쉬워요</span> 정답은 "${choiceText(q.choices[q.answer])}" 입니다${explainHtml}`;
+      wordEl.querySelector('.fx-wrong').classList.add('show');
     }
 
     const buttonsEl = host.querySelector('#buttons');
-    buttonsEl.innerHTML = '<button class="big-btn primary" id="next">다음 문제</button>';
     enter(buttonsEl);
+    buttonsEl.querySelector('#next').classList.remove('reserve');
     keepInView(buttonsEl);
-    buttonsEl.querySelector('#next').onclick = () => { idx += 1; render(); };
   }
 }
 
