@@ -420,6 +420,9 @@ body {
 
 .ticket.small strong { font-size: 21px; }
 
+/* 암호 화면: 안내 문장과 [놀이 더 하기] 사이를 띄운다 */
+.notice + .big-btn { margin-top: 24px; }
+
 /* ---------- 짝 맞추기 ---------- */
 .match-grid {
   display: grid;
