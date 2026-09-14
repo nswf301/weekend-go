@@ -152,23 +152,25 @@ body {
 }
 
 /* 13문제(quiz 4·proverb 3·market 3·odd 3) 결과 상태(버튼 포함) 자연 높이를
-   360x640에서 실측한 최대값(333.9375px, 다른 하나 찾기 3번을 오답으로 골랐을
+   360x640에서 실측한 최대값(329.5625px, 다른 하나 찾기 3번을 오답으로 골랐을
    때)을 올린 값이다. 문제마다 카드 크기가 들쭉날쭉하지 않게 고정한다. */
 .popup-card {
   width: 100%;
   max-width: 420px;
-  min-height: 334px;
+  min-height: 330px;
   display: flex;
   flex-direction: column;
 }
 
-/* 위쪽 문구 칸: 남는 공간을 차지하며 문구를 가운데 둔다 */
-.popup-card .feedback {
+/* 위쪽 문구 칸: 남는 공간을 차지하며 안의 문구(.feedback)를 가운데 둔다.
+   .feedback 자체에는 flex를 주지 않는다 — 주면 배지(span)·글자·<br>이 각각
+   가로로 갈라진 칸이 되어버려서, 감싸는 이 칸에서만 가운데 정렬을 하고
+   .feedback 안쪽은 기존처럼 한 문단으로 흐르며 줄바꿈되게 둔다. */
+.popup-card .popup-feedback {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0;
 }
 
 /* 아래 버튼 칸: "정답은…" 단계(#buttons가 비어 있을 때)부터 버튼 한 개가
