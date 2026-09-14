@@ -3,7 +3,7 @@
 //  quiz·proverb·market·odd 가 이 파일 하나를 함께 쓴다.
 //  문제 내용은 각 게임 파일 맨 위에 있고, 흐름을 고칠 땐 여기만 고치면 된다.
 // ===========================================================
-import { PACE, wait, enter, keepInView, toTop } from './pace.js';
+import { PACE, wait, enter, toTop } from './pace.js';
 
 // options: { lead, questions, grid }
 // questions 하나는 { question, choices, answer, explain } 형태다.
@@ -33,11 +33,6 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
     const picsHtml = q.pics
       ? `<div class="q-pics${q.pics.length === 1 ? ' one' : ''}">${q.pics.map((p) => `<img src="pics/${p}.svg" alt="">`).join('')}</div>`
       : '';
-    // 정답 공개 전/뒤에 나올 수 있는 문구 세 가지를 미리 다 그려 한 칸에 겹쳐 둔다.
-    // 오답 문구는 무엇을 골랐든 같다(정답이 무엇인지만 알려주므로).
-    const explainHtml = q.explain ? `<br>${q.explain}` : '';
-    const correctHtml = `<span class="badge ok">정답입니다</span>${explainHtml}`;
-    const wrongHtml = `<span class="badge no">아쉬워요</span> 정답은 "${choiceText(q.choices[q.answer])}" 입니다${explainHtml}`;
     host.innerHTML = `
       ${lead ? `<p class="lead">${lead}</p>` : ''}
       <p class="step">${idx + 1}번째 / ${questions.length}문제</p>
@@ -45,45 +40,55 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
       <p class="question">${q.question}</p>
       <div id="choices" class="${grid || withPics ? 'choice-grid' : ''}">
         ${q.choices.map((c, i) => choiceHtml(c, i)).join('')}
-      </div>
-      <p class="feedback stack" id="word">
-        <span class="fx fx-suspense">정답은…</span>
-        <span class="fx fx-correct">${correctHtml}</span>
-        <span class="fx fx-wrong">${wrongHtml}</span>
-      </p>
-      <div id="buttons"><button class="big-btn primary reserve" id="next">다음 문제</button></div>`;
+      </div>`;
     enter(host);
 
     host.querySelectorAll('#choices button').forEach((btn) => {
       btn.onclick = () => pick(Number(btn.dataset.i));
     });
-    host.querySelector('#next').onclick = () => { idx += 1; render(); };
   }
 
+  // 정답 공개는 화면 가운데 팝업으로 한다. 바탕이 옅게 어두워져 뒤의 보기
+  // 표시(picked·correct)가 비쳐 보이고, [다음 문제]를 눌러야만 닫힌다.
   async function pick(i) {
     const q = questions[idx];
     const choicesWrap = host.querySelector('#choices');
     choicesWrap.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     choicesWrap.children[i].classList.add('picked');
 
-    const wordEl = host.querySelector('#word');
-    wordEl.querySelector('.fx-suspense').classList.add('show');
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+      <div class="card popup-card" role="dialog" aria-modal="true">
+        <p class="feedback" id="word">정답은…</p>
+        <div id="buttons"></div>
+      </div>`;
+    // host(#game)의 조상인 .card는 화면 전환 때 .enter로 translateY 애니메이션이
+    // 걸려 있어(끝난 뒤에도 transform:translateY(0)이 남는다) position:fixed의
+    // 기준이 뷰포트가 아니라 .card가 되어버린다. body에 직접 붙여 피한다.
+    document.body.appendChild(popup);
+    enter(popup);
 
     await wait(PACE.suspense);
 
     choicesWrap.children[q.answer].classList.add('correct');
-    wordEl.querySelector('.fx-suspense').classList.remove('show');
+    const explainHtml = q.explain ? `<br>${q.explain}` : '';
+    const wordEl = popup.querySelector('#word');
     if (i === q.answer) {
       correctCount += 1;
-      wordEl.querySelector('.fx-correct').classList.add('show');
+      wordEl.innerHTML = `<span class="badge ok">정답입니다</span>${explainHtml}`;
     } else {
-      wordEl.querySelector('.fx-wrong').classList.add('show');
+      wordEl.innerHTML = `<span class="badge no">아쉬워요</span> 정답은 "${choiceText(q.choices[q.answer])}" 입니다${explainHtml}`;
     }
 
-    const buttonsEl = host.querySelector('#buttons');
+    const buttonsEl = popup.querySelector('#buttons');
+    buttonsEl.innerHTML = '<button class="big-btn primary" id="next">다음 문제</button>';
     enter(buttonsEl);
-    buttonsEl.querySelector('#next').classList.remove('reserve');
-    keepInView(buttonsEl);
+    buttonsEl.querySelector('#next').onclick = () => {
+      popup.remove();
+      idx += 1;
+      render();
+    };
   }
 }
 
