@@ -41,7 +41,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* 위에 붙인다. 가운데 정렬이면 문구·버튼·그림이 생길 때마다 내용이 위로 밀려 올라가 보였다(사용자 지적) */
+  justify-content: flex-start;
 }
 
 .card {
