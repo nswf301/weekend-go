@@ -27,11 +27,12 @@ export const CONFIG = {
 export const BOOTHS = [
   { code: 'proverb', name: '속담 잇기',      pin: '1101', pic: 'booth-proverb' },
   { code: 'market',  name: '장보기 셈',      pin: '1202', pic: 'booth-market' },
-  { code: 'rps',     name: '가위바위보',     pin: '1303', pic: 'booth-rps' },
+  { code: 'number',  name: '숫자 누르기',    pin: '1303', pic: 'booth-number' },
   { code: 'quiz',    name: '추억 퀴즈',      pin: '1404', pic: 'booth-quiz' },
   { code: 'memory',  name: '순서 기억하기',  pin: '1505', pic: 'booth-memory' },
   { code: 'match',   name: '짝 맞추기',      pin: '1606', pic: 'booth-match' },
   { code: 'odd',     name: '다른 하나 찾기', pin: '1707', pic: 'booth-odd' },
+  { code: 'find',    name: '그림 찾기',      pin: '1808', pic: 'booth-find' },
 ];
 
 export function findBooth(code) {

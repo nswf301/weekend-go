@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<defs><filter id="p" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB"><feDropShadow dx="1.2" dy="2.2" stdDeviation="1.1" flood-color="#5a3a22" flood-opacity="0.3"/></filter></defs>
+<g transform="translate(34 34) rotate(-6)">
+<polygon points="-22,-24 22,-24 25,-21 25,21 22,24 -22,24 -25,21 -25,-21" fill="#3e9d5d" filter="url(#p)"/>
+<polygon points="-18,-20 18,-20 20,-18 20,18 18,20 -18,20 -20,18 -20,-18" fill="#e6f4ec"/>
+<polygon points="-20,-18 -4,-18 -20,-2" fill="#ffffff"/>
+<circle cx="0" cy="0" r="6" fill="#1f7a4d" filter="url(#p)"/>
+</g>
+<g transform="translate(86 34) rotate(5)">
+<polygon points="-22,-24 22,-24 25,-21 25,21 22,24 -22,24 -25,21 -25,-21" fill="#ecdcae" filter="url(#p)"/>
+<polygon points="-18,-20 18,-20 20,-18 20,18 18,20 -18,20 -20,18 -20,-18" fill="#fffaf0"/>
+<circle cx="-9" cy="-9" r="6" fill="#d84a3e" filter="url(#p)"/>
+<circle cx="9" cy="9" r="6" fill="#d84a3e" filter="url(#p)"/>
+</g>
+<g transform="translate(34 86) rotate(4)">
+<polygon points="-22,-24 22,-24 25,-21 25,21 22,24 -22,24 -25,21 -25,-21" fill="#ecdcae" filter="url(#p)"/>
+<polygon points="-18,-20 18,-20 20,-18 20,18 18,20 -18,20 -20,18 -20,-18" fill="#fffaf0"/>
+<circle cx="-10" cy="-10" r="5.5" fill="#d84a3e" filter="url(#p)"/>
+<circle cx="0" cy="0" r="5.5" fill="#d84a3e" filter="url(#p)"/>
+<circle cx="10" cy="10" r="5.5" fill="#d84a3e" filter="url(#p)"/>
+</g>
+<g transform="translate(86 86) rotate(-5)">
+<polygon points="-22,-24 22,-24 25,-21 25,21 22,24 -22,24 -25,21 -25,-21" fill="#ecdcae" filter="url(#p)"/>
+<polygon points="-18,-20 18,-20 20,-18 20,18 18,20 -18,20 -20,18 -20,-18" fill="#fffaf0"/>
+<circle cx="-9" cy="-9" r="5.5" fill="#2f4f7a" filter="url(#p)"/>
+<circle cx="9" cy="-9" r="5.5" fill="#2f4f7a" filter="url(#p)"/>
+<circle cx="-9" cy="9" r="5.5" fill="#2f4f7a" filter="url(#p)"/>
+<circle cx="9" cy="9" r="5.5" fill="#2f4f7a" filter="url(#p)"/>
+</g>
+</svg>
