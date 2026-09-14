@@ -612,13 +612,20 @@ body {
 
 /* 덮인 카드가 빈 칸으로 보여서 뒷면을 그렸다 */
 .match-card {
+  position: relative;
   background: linear-gradient(140deg, #f7a99f, #ef7568);
   border-color: var(--point-dark);
   min-height: 96px;
 }
 
+/* '복'은 앞면 자리 위에 겹쳐 올린다(자리를 따로 차지하지 않게) */
 .match-card::after {
   content: '복';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: rgba(255, 255, 255, 0.92);
   font-size: 30px;
   font-weight: 800;
@@ -719,9 +726,10 @@ body {
 .match-card .cell-pic { width: 70%; }
 .match-card .cell-name { font-size: 20px; }
 
-/* 덮인 카드는 앞면을 감추고 뒷면('복')만 보인다 */
+/* 덮인 카드는 앞면을 감추고 뒷면('복')만 보인다.
+   앞면은 없애지 않고 안 보이게만 해서 자리를 그대로 차지한다 — 그래야 뒤집어도 카드 크기가 같다 */
 .match-card:not(.open):not(.matched) .cell-pic,
-.match-card:not(.open):not(.matched) .cell-name { display: none; }
+.match-card:not(.open):not(.matched) .cell-name { visibility: hidden; }
 
 .rps-picks {
   display: grid;
