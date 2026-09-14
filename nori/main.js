@@ -246,7 +246,10 @@ function showPrize() {
       </div>
       <p class="ticket">참여 번호 <strong>${esc(state.number)}번</strong></p>
       <p class="notice">${esc(CONFIG.prizeNotice)}</p>
+      <button class="big-btn ghost" id="more">놀이 더 하기</button>
     </div>`);
+  // 도장을 다 모은 뒤에도 다른 놀이를 더 할 수 있게 한다(사용자 요청). 앱 안 카메라로 부스 QR을 찍는다.
+  document.getElementById('more').onclick = openScanner;
 }
 
 // ---------------- 다음 부스로 ----------------
