@@ -52,8 +52,8 @@ export function keepInView(el, buttonDelay = PACE.buttonDelay) {
     if (!el.isConnected) return;
     const r = el.getBoundingClientRect();
     if (r.top >= 0 && r.bottom <= window.innerHeight) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'end' });
+    // 스르륵 굴리면 화면이 아래에서 올라오는 것처럼 보여서(사용자 지적) 한 번에 옮긴다.
+    el.scrollIntoView({ behavior: 'auto', block: 'end' });
   }, buttonDelay);
 }
 
