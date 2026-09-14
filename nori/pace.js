@@ -29,14 +29,23 @@ export function enter(root, buttonDelay = PACE.buttonDelay) {
 
   // 버튼을 먼저 숨긴 뒤에 리플로우를 강제해야 한다. 순서가 바뀌면 리플로우가
   // "아직 안 숨겨진" 상태를 찍어버려서, 숨기는 순간 1→0으로 옅어지는 게 눈에 보인다.
-  const buttons = root.querySelectorAll('button');
-  buttons.forEach((b) => b.classList.add('wait'));
+  // 숨기는 순간에는 버튼의 opacity 전환(.8s)을 잠깐 끈다. 이미 한 번 "보이는 상태"로 계산된 버튼
+  // (숨겨 둔 자리를 드러낸 버튼, 화면을 맨 위로 되돌리며 브라우저가 미리 계산한 새 버튼)에 그냥 .wait를
+  // 붙이면 1→0으로 옅어지는 게 보여서, 버튼이 살짝 나타났다 사라지고 다시 나타났다(사용자 지적).
+  // 인라인 transition(짝 맞추기 카드)은 저장했다가 그대로 되돌린다.
+  const buttons = [...root.querySelectorAll('button')];
+  const savedTransitions = buttons.map((b) => b.style.transition);
+  buttons.forEach((b) => {
+    b.style.transition = 'none';
+    b.classList.add('wait');
+  });
 
   root.style.setProperty('--fade', `${PACE.fadeIn}ms`);
   root.classList.remove('enter');
   // eslint-disable-next-line no-void
-  void root.offsetWidth; // 강제로 리플로우시켜 애니메이션을 처음부터 다시 재생한다
+  void root.offsetWidth; // 강제로 리플로우시켜 애니메이션을 처음부터 다시 재생한다(숨긴 상태도 이때 확정된다)
   root.classList.add('enter');
+  buttons.forEach((b, i) => { b.style.transition = savedTransitions[i]; });
 
   setTimeout(() => {
     buttons.forEach((b) => b.classList.remove('wait'));
