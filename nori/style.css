@@ -648,6 +648,13 @@ body {
   margin: -4px auto 14px;
 }
 
+/* 그림은 모두 정사각형(viewBox 120×120)이다. 불러오기 전부터 자리를 잡아 둬서
+   그림이 늦게 들어올 때 아래 글자가 튀지 않게 한다 */
+.booth-pic,
+.q-pics img,
+.pic-btn img,
+.cell-pic { aspect-ratio: 1 / 1; }
+
 /* 문제 위 그림 줄(장보기 셈). 여러 장이면 작게, 한 장이면 크게 */
 .q-pics {
   display: flex;
