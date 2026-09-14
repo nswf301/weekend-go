@@ -44,7 +44,7 @@ async function boot() {
   if (state.preview && state.booth) return startGame(state.booth);
 
   const saved = savedNumber();
-  if (!saved) return showWelcome();
+  if (!saved) return state.booth ? showBoothIntro() : showWelcome();
 
   state.number = saved;
   try {
@@ -108,7 +108,7 @@ function showResume() {
       setMsg('연결이 잠시 끊겼습니다. 다시 눌러 주세요');
     }
   });
-  document.getElementById('back').onclick = showWelcome;
+  document.getElementById('back').onclick = () => (state.booth ? showBoothIntro() : showWelcome());
 }
 
 // ---------------- 부스 안내 ----------------
@@ -135,8 +135,22 @@ function showBoothIntro() {
       ${booth.pic ? `<img class="booth-pic" src="pics/${esc(booth.pic)}.svg" alt="">` : ''}
       ${progressHtml()}
       <button class="big-btn primary" id="play">놀이 시작</button>
+      ${state.number ? '' : '<button class="big-btn ghost" id="resume">번호를 이미 받으셨어요</button>'}
     </div>`);
-  document.getElementById('play').onclick = () => startGame(booth);
+  document.getElementById('play').onclick = async () => {
+    if (state.number) return startGame(booth);
+    setBusy('play', '번호를 받는 중입니다');
+    try {
+      state.number = await issueNumber();
+      state.stamps = {};
+      startGame(booth);
+    } catch (e) {
+      showError('번호를 받지 못했습니다', '직원에게 말씀해 주세요');
+    }
+  };
+  if (!state.number) {
+    document.getElementById('resume').onclick = showResume;
+  }
 }
 
 // ---------------- 게임 ----------------
