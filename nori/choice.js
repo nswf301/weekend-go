@@ -60,7 +60,7 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
     popup.className = 'popup-overlay';
     popup.innerHTML = `
       <div class="card popup-card" role="dialog" aria-modal="true">
-        <p class="feedback" id="word">정답은…</p>
+        <div class="popup-feedback"><p class="feedback" id="word">정답은…</p></div>
         <div id="buttons"></div>
       </div>`;
     // host(#game)의 조상인 .card에는 화면 전환 때 .enter 애니메이션이 걸린다.
