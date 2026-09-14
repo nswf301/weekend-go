@@ -1,6 +1,6 @@
 # 어울림 한마당 (nori)
 
-어르신 행사에서 **부스 일곱 곳 중 세 곳을 돌면 상품 암호**가 나오는 도장 모으기 앱.
+어르신 행사에서 **부스 여덟 곳 중 세 곳을 돌면 상품 암호**가 나오는 도장 모으기 앱.
 어르신이 개인 휴대전화로 QR을 찍어 참여한다. 행사 규모 300명 기준.
 
 주말 앱(`../index.html`)과는 아무 상관 없다. 저장소만 같이 쓴다.
@@ -28,7 +28,7 @@ player.js       참여 번호 발급, 도장 저장·복구 (Firebase)
 scan.js         앱 안에서 QR 찍기
 style.css       디자인 전부
 quiz-data.js    추억 퀴즈 문항
-games/          놀이 하나에 파일 하나 (proverb, market, rps, quiz, memory, match, odd)
+games/          놀이 하나에 파일 하나 (proverb, market, number, quiz, memory, match, odd, find)
 pics/           그림 (색종이 오려붙이기 SVG, 한 파일에 그림 하나)
 admin/          관리 화면
 print/          부스 QR 인쇄판 (A4 한 장 = 부스 하나)
@@ -37,7 +37,7 @@ print/          부스 QR 인쇄판 (A4 한 장 = 부스 하나)
 놀이를 고칠 땐 `games/` 안의 그 파일 하나만 열면 된다. 놀이를 더 붙이려면
 `games/새코드.js`를 만들고 `config.js`의 `BOOTHS`에 한 줄 넣으면 끝이다.
 
-**그림** — `pics/이름.svg`. 코드에서는 `.svg`를 뺀 이름으로 부른다(`apple`, `hand-rock`,
+**그림** — `pics/이름.svg`. 코드에서는 `.svg`를 뺀 이름으로 부른다(`apple`, `moon`,
 부스 대표 그림은 `booth-부스코드`). 부스 첫 화면 그림은 `config.js` `BOOTHS`의 `pic`으로 정하고,
 문제 위 그림·그림 보기는 `choice.js` 맨 위 주석대로 문제에 `pics`·`{ text, pic }`를 넣는다.
 
@@ -124,7 +124,7 @@ firebase firestore:delete nori/counter --force --project weekend-go-1 --account 
 
 - 부스 세 곳을 돌아 암호가 나오는 것 (운세 → 윷 → 복주머니, 부스 번호로 이동)
 - 새 브라우저에서 번호만 넣어 도장 3개가 복구되는 것
-- 놀이 일곱 개가 다 열리고 도장까지 도달하는 것
+- 놀이 일곱 개가 다 열리고 도장까지 도달하는 것 (그 뒤 2026-09-14 가위바위보를 빼고 숫자 누르기·그림 찾기를 더해 여덟 개가 됐다)
 - 관리 화면이 실제 값을 읽는 것
 - QR 인쇄판이 부스마다 A4 한 장씩 나오는 것
 
@@ -146,4 +146,4 @@ firebase firestore:delete nori/counter --force --project weekend-go-1 --account 
 
 - 실제 폰으로 앱 안 카메라 확인
 - 행사 이름·상품 암호·퀴즈 문항을 실제 내용으로 교체 (`config.js`, `quiz-data.js`)
-- 부스 네 자리 번호가 현장 표기와 맞는지 확인 (지금 1101/1202/1303/1404/1505/1606/1707)
+- 부스 네 자리 번호가 현장 표기와 맞는지 확인 (지금 1101/1202/1303/1404/1505/1606/1707/1808)
