@@ -52,6 +52,15 @@ body {
   box-shadow: 0 2px 14px rgba(90, 60, 40, 0.06);
 }
 
+/* 놀이 화면은 배경 카드를 그리지 않는다. 화면마다 내용 길이가 달라 카드가 커졌다
+   작아졌다 보였기 때문(사용자 요청). 테두리 두께·여백은 그대로 둬서 배치는 같다.
+   정답 팝업과 관리 화면은 흰 카드를 그대로 쓴다. */
+.card:not(.popup-card):not(.admin-card) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
 /* ---------- 공통 글자 ---------- */
 .title {
   font-size: 38px;
