@@ -190,6 +190,19 @@ body {
   min-height: 92px;
 }
 
+/* 팝업 버튼 자리만 잡아 두고 안 보이게(순서 기억하기: 버튼 1개/2개여도 팝업 크기가 같게) */
+.slot-off {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 순서 기억하기 팝업은 버튼 두 칸을 늘 잡아 두므로 문구 칸이 좁다.
+   가장 큰 결과(360px 폭 실측: 틀림 342px, 맞음 343px — 아래 칸이 코랄 버튼이라 6px 높다)에
+   맞춰 "맞았을까요…"부터 같은 크기로 둔다 */
+.popup-card.memory-popup {
+  min-height: 344px;
+}
+
 .badge {
   display: inline-block;
   padding: 4px 14px;
