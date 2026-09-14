@@ -63,9 +63,10 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
         <p class="feedback" id="word">정답은…</p>
         <div id="buttons"></div>
       </div>`;
-    // host(#game)의 조상인 .card는 화면 전환 때 .enter로 translateY 애니메이션이
-    // 걸려 있어(끝난 뒤에도 transform:translateY(0)이 남는다) position:fixed의
-    // 기준이 뷰포트가 아니라 .card가 되어버린다. body에 직접 붙여 피한다.
+    // host(#game)의 조상인 .card에는 화면 전환 때 .enter 애니메이션이 걸린다.
+    // 예전엔 여기 transform(translateY)이 있어서 끝난 뒤에도 값이 남아
+    // position:fixed의 기준이 뷰포트가 아니라 .card로 틀어진 적이 있다.
+    // 지금은 opacity만 쓰지만, 안전하게 계속 body에 직접 붙인다.
     document.body.appendChild(popup);
     enter(popup);
 

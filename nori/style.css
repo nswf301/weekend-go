@@ -151,9 +151,31 @@ body {
   z-index: 50;
 }
 
+/* 13문제(quiz 4·proverb 3·market 3·odd 3) 결과 상태(버튼 포함) 자연 높이를
+   360x640에서 실측한 최대값(333.9375px, 다른 하나 찾기 3번을 오답으로 골랐을
+   때)을 올린 값이다. 문제마다 카드 크기가 들쭉날쭉하지 않게 고정한다. */
 .popup-card {
   width: 100%;
   max-width: 420px;
+  min-height: 334px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 위쪽 문구 칸: 남는 공간을 차지하며 문구를 가운데 둔다 */
+.popup-card .feedback {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+/* 아래 버튼 칸: "정답은…" 단계(#buttons가 비어 있을 때)부터 버튼 한 개가
+   찼을 때와 같은 높이로 자리를 차지해 둔다. 그래야 버튼이 나타나도 문구 칸
+   크기가 바뀌지 않아 문구 위치가 밀리지 않는다. */
+.popup-card #buttons {
+  min-height: 92px;
 }
 
 .badge {
@@ -752,8 +774,8 @@ body {
    속도(pace.js) — 화면 전환은 서서히, 버튼은 늦게 나타난다
    =========================================================== */
 @keyframes nori-enter {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .enter {
