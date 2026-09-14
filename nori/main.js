@@ -331,11 +331,11 @@ function progressHtml(justCode) {
     const on = state.stamps[b.code] ? ' on' : '';
     const isNew = justCode && b.code === justCode;
     const cls = `stamp${on}${isNew ? ' new' : ''}`;
-    const style = isNew ? ` style="animation-delay:${PACE.fadeIn}ms;animation-duration:${PACE.stamp}ms"` : '';
+    // 인라인 style은 ::after 가상요소엔 먹지 않으므로 CSS 변수로 넘긴다.
+    const style = isNew ? ` style="--delay:${PACE.fadeIn}ms;--dur:${PACE.stamp}ms"` : '';
     return `<span class="${cls}"${style}>${esc(b.name)}</span>`;
   }).join('');
   return `
-    <p class="count">도장 <strong>${stampCount()}</strong>개 / ${CONFIG.needStamps}개</p>
     <div class="stamps">${dots}</div>`;
 }
 
