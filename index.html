@@ -277,6 +277,9 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   border:1px solid var(--line);border-radius:3px;padding:0 6px;
 }
 .fst-go{flex:0 0 auto;align-self:center;padding-bottom:6px}
+/* 난지캠핑장 칸 — 달력 아래, 휴양림 권역 위 */
+#campList{margin-top:14px}
+.camp-badges{margin-top:5px}
 
 /* 지점 한 칸 — 이름 줄 아래로
  *   왼쪽: 회차별 줄 (인원은 왼쪽으로 당겨둔다)
@@ -523,13 +526,31 @@ select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
   <!-- ─────────── 휴양림 ─────────── -->
   <section class="panel" id="panel-forest" role="tabpanel" aria-labelledby="tab-forest" hidden>
-    <p class="lead">숲나들e에 등록된 자연휴양림입니다.</p>
+    <p class="lead">숲나들e에 등록된 자연휴양림과 난지캠핑장입니다.</p>
+
+    <div class="panelbox">
+      <div class="field">
+        <span class="label q">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4.5 7.2c4.8-.5 10.2-.6 15 0 .6 3.9.6 8.1 0 12.1-4.9.6-10.1.6-15 0-.7-4-.6-8.2 0-12.1Z"
+                  fill="var(--accent-soft)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M8.4 4.2v4M15.6 4.2v4M4.7 11.6c4.8-.5 10-.5 14.6 0"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="15.7" r="1.5" fill="var(--accent)"/>
+          </svg>
+          언제 갈까?
+        </span>
+        <div class="cal" id="forestCal"></div>
+      </div>
+    </div>
+
+    <div id="campList"></div>
 
     <div id="forestList"></div>
 
     <div class="foot">
       <b>데이터 출처</b><br>
-      숲나들e(산림청 자연휴양림 통합예약)
+      숲나들e(산림청 자연휴양림 통합예약) · 서울시 공공서비스예약
     </div>
   </section>
 
@@ -617,6 +638,7 @@ let DATA = SAMPLE;
 let IS_SAMPLE = true;
 let FORESTS = [];        // 휴양림 탭 목록 (data.json의 forests)
 let KIDS = [];           // 키즈카페 탭 목록 (data.json의 kidscafe)
+let CAMP = [];           // 휴양림 탭 난지캠핑장 구역 (data.json의 camping)
 
 async function loadData(){
   try{
@@ -627,6 +649,7 @@ async function loadData(){
     IS_SAMPLE = false;
     if(Array.isArray(j.forests))  FORESTS = j.forests;
     if(Array.isArray(j.kidscafe)) KIDS    = j.kidscafe;
+    if(Array.isArray(j.camping))  CAMP    = j.camping;
     const d = new Date(j.generatedAt);
     document.getElementById("notice").innerHTML =
       `<strong>자료</strong><span>${j.items.length}건 · ${d.getMonth()+1}월 ${d.getDate()}일 기준. `
@@ -930,36 +953,95 @@ function drawCal(){
   const lastDay=new Date(y,m+1,0).getDate();
   const todayStr=iso(new Date());
 
-  const cal=document.getElementById("cal");
-  cal.innerHTML=
-    `<div class="cal-head">
-       <button class="cal-nav" type="button" id="calPrev" aria-label="이전 달">‹</button>
-       <span class="cal-title">${y}년 ${m+1}월</span>
-       <button class="cal-nav" type="button" id="calNext" aria-label="다음 달">›</button>
-     </div>
-     <div class="cal-grid">${
-       DOW.map((d,n)=>`<div class="cal-dow s${n}">${d}</div>`).join("")
-     }</div>
-     <div class="cal-grid" id="calDays"></div>`;
+  /* 찾기 탭(#cal)과 휴양림 탭(#forestCal)에 같은 달력을 그린다 — 날짜·달이 함께 움직인다.
+   * 안쪽 요소는 두 번 생기므로 id가 아니라 class로 찾는다. */
+  ["cal","forestCal"].forEach(id=>{
+    const cal=document.getElementById(id);
+    if(!cal) return;
+    cal.innerHTML=
+      `<div class="cal-head">
+         <button class="cal-nav cal-prev" type="button" aria-label="이전 달">‹</button>
+         <span class="cal-title">${y}년 ${m+1}월</span>
+         <button class="cal-nav cal-next" type="button" aria-label="다음 달">›</button>
+       </div>
+       <div class="cal-grid">${
+         DOW.map((d,n)=>`<div class="cal-dow s${n}">${d}</div>`).join("")
+       }</div>
+       <div class="cal-grid cal-days"></div>`;
 
-  const days=cal.querySelector("#calDays");
-  for(let n=0;n<startDow;n++) days.appendChild(document.createElement("div"));
+    const days=cal.querySelector(".cal-days");
+    for(let n=0;n<startDow;n++) days.appendChild(document.createElement("div"));
 
-  for(let d=1;d<=lastDay;d++){
-    const key=`${y}-${pad(m+1)}-${pad(d)}`;
-    const dow=new Date(y,m,d).getDay();
-    const b=document.createElement("button");
-    b.type="button";
-    b.className="cal-day s"+dow
-      + (key===state.date ? " on" : "")
-      + (key===todayStr ? " today" : "");
-    b.textContent=d;
-    b.onclick=()=>{ state.date=key; drawCal(); render(); };
-    days.appendChild(b);
+    for(let d=1;d<=lastDay;d++){
+      const key=`${y}-${pad(m+1)}-${pad(d)}`;
+      const dow=new Date(y,m,d).getDay();
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="cal-day s"+dow
+        + (key===state.date ? " on" : "")
+        + (key===todayStr ? " today" : "");
+      b.textContent=d;
+      b.onclick=()=>{ state.date=key; drawCal(); render(); drawCamp(); };
+      days.appendChild(b);
+    }
+
+    cal.querySelector(".cal-prev").onclick=()=>{ calCursor=new Date(y,m-1,1); drawCal(); };
+    cal.querySelector(".cal-next").onclick=()=>{ calCursor=new Date(y,m+1,1); drawCal(); };
+  });
+}
+
+/* ── 난지캠핑장 (휴양림 탭) ──
+ * 고른 날짜에 이용할 수 있는 구역만 보인다. 남은 자리 숫자는 없다 — 서울 예약
+ * 사이트 달력이 자동 요청을 막아서 가져올 수 없다. 줄마다 예약 주소가 다르다. */
+function drawCamp(){
+  const box=document.getElementById("campList");
+  box.innerHTML="";
+
+  /* 난지캠핑장은 서울이다. 찾기 탭에서 서울을 꺼두면 여기도 가린다(키즈카페와 같은 판정). */
+  if(state.areas.size>0 && !state.areas.has("서울")){
+    box.innerHTML=`<p class="help" style="padding:8px 2px">서울을 꺼두셨습니다. 난지캠핑장은 서울이라 보이지 않습니다 — 찾기 탭에서 서울을 켜세요.</p>`;
+    return;
   }
 
-  cal.querySelector("#calPrev").onclick=()=>{ calCursor=new Date(y,m-1,1); drawCal(); };
-  cal.querySelector("#calNext").onclick=()=>{ calCursor=new Date(y,m+1,1); drawCal(); };
+  const d=state.date;
+  const list=CAMP.filter(c=>{
+    const inPeriod=(!c.start||c.start<=d) && (!c.end||d<=c.end);
+    const ok=(c.status==="접수중" && (!c.rcptEnd||TODAY_STR<=c.rcptEnd)) || c.status==="안내중";
+    /* 기간 칸은 실제 이용 달이 아니다 — "10월"분도 9월 1일부터 열려 있다.
+     * 그래서 이름 앞의 "N월"이 고른 날짜의 달과 맞는 것만 남긴다. */
+    const mm=String(c.title||"").match(/^(\d{1,2})월/);
+    const sameMonth=!mm || Number(mm[1])===Number(d.slice(5,7));
+    return inPeriod && ok && sameMonth;
+  });
+
+  let inner="";
+  if(!list.length){
+    inner=`<p class="help" style="padding:8px 2px">이 날짜에 접수 중인 구역이 없습니다.</p>`;
+  }else{
+    list.forEach(c=>{
+      let bs;
+      if(c.status==="안내중"){
+        const rs=c.rcptStart ? new Date(c.rcptStart+"T00:00:00") : null;
+        bs=[{t: rs ? `접수 예정 ${rs.getMonth()+1}월 ${rs.getDate()}일` : "접수 예정", c:""}];
+        if(c.fee) bs.push({t:c.fee, c:/무료/.test(c.fee)?"free":""});
+      }else{
+        bs=badges({kind:"reserve", rcptEnd:c.rcptEnd, fee:c.fee}, d);
+      }
+      inner+=`<div class="fst-item">`
+        + `<div class="fst-main"><div class="fst-nm">${esc(c.title||"")}</div>`
+        + `<div class="badges camp-badges">${bs.map(b=>`<span class="badge ${b.c}">${esc(b.t)}</span>`).join("")}</div></div>`
+        + `<span class="fst-go"><a class="go map" href="${esc(c.url||"")}" target="_blank" rel="noopener">예약</a></span>`
+        + `</div>`;
+    });
+  }
+
+  const g=document.createElement("details");
+  g.className="zone";
+  g.open=true;
+  g.innerHTML=`<summary><span><span class="arrow">▸</span> 난지캠핑장</span>`
+    + `<span class="n">마포구 · ${list.length}개 구역</span></summary>`
+    + `<div class="zone-body">${inner}</div>`;
+  box.appendChild(g);
 }
 
 /* ── 휴양림 목록 ── */
@@ -1221,6 +1303,7 @@ function drawAreaBox(){
       render();
       drawForests();   // 휴양림·키즈카페 탭도 같은 지역 체크를 따르므로 함께 다시 그린다
       drawKids();
+      drawCamp();
     };
     box.appendChild(l);
   });
@@ -1253,5 +1336,5 @@ document.getElementById("tab-kids").addEventListener("click",()=>{
   if(!kidsSlots && !kidsBusy && kidsDate.value) loadKidsSlots(kidsDate.value);
 },{once:false});
 
-loadData().then(()=>{ drawAreaBox(); render(); drawForests(); drawKids(); });
+loadData().then(()=>{ drawAreaBox(); render(); drawForests(); drawKids(); drawCamp(); });
 </script>
