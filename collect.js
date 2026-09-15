@@ -261,6 +261,54 @@ async function collectSeoul() {
   return out;
 }
 
+/* 난지캠핑장 — 휴양림 탭에 따로 보여준다.
+ * 공간시설 목록(ListPublicReservationInstitution)은 강당·회의실이 대부분이라
+ * SEOUL_SERVICES에 넣지 않고, 여기서 난지캠핑장 줄만 골라 camping으로 보낸다. */
+async function collectCamping() {
+  const key = KEYS.seoulOpenData;
+  if (!key) return [];
+  const svc = "ListPublicReservationInstitution";
+  const out = [];
+  let start = 1;
+  for (;;) {
+    const end = start + 999;
+    const url = `http://openapi.seoul.go.kr:8088/${key}/json/${svc}/${start}/${end}/`;
+    const j = await getJson(url, svc);
+    const body = j[svc];
+
+    if (!body || !body.row) {
+      if (body && body.RESULT && body.RESULT.CODE !== "INFO-000") {
+        console.warn(`  ! ${svc}: ${body.RESULT.MESSAGE}`);
+      }
+      break;
+    }
+
+    for (const r of body.row) {
+      if (!/난지캠핑장/.test(r.PLACENM || "")) continue;
+      // 접수가 이미 끝난 것, 마감·중지된 것은 버린다 (collectSeoul과 같은 규칙)
+      const rcptEnd = toDate(r.RCPTENDDT);
+      if (rcptEnd && rcptEnd < TODAY) continue;
+      if (!["접수중", "안내중"].includes(r.SVCSTATNM)) continue;
+
+      out.push({
+        // "9월 프리캠핑존 (4인용, 잔디형) 26년 한강공원 난지캠핑장" → 끝의 꼬리를 뗀다
+        title: unent(r.SVCNM).replace(/\s+\d{2,4}년\s*(?:한강공원\s*)?난지캠핑장\s*$/, "").trim(),
+        status: r.SVCSTATNM,
+        fee: r.PAYATNM || "",
+        start: toDate(r.SVCOPNBGNDT),
+        end: toDate(r.SVCOPNENDDT),
+        rcptStart: toDate(r.RCPTBGNDT),
+        rcptEnd,
+        url: r.SVCURL,
+      });
+    }
+
+    if (body.row.length < 1000) break;
+    start = end + 1;
+  }
+  return out;
+}
+
 /* ── 2. 전국 표준데이터 (공공데이터포털) ───────────────────── */
 
 const STANDARD = [
@@ -1163,6 +1211,7 @@ const MANUAL = [];
   // const std2 = await collectStandard2().catch((e) => { console.error("표준데이터 추가 실패:", e.message); return []; });
   const std2  = [];
   const sigun = await collectSigun().catch((e) => { console.error("경기 시군 실패:", e.message); return []; });
+  const camping = await collectCamping().catch((e) => { console.error("난지캠핑장 실패:", e.message); return []; });
 
   if (PEEK) { console.log("\n칸 이름 확인만 하고 끝냅니다."); return; }
 
@@ -1253,6 +1302,15 @@ const MANUAL = [];
       })
       .sort((a, b) => (a.area || "").localeCompare(b.area || "", "ko") ||
                       (a.name || "").localeCompare(b.name || "", "ko")),
+    // 휴양림 탭의 난지캠핑장 칸 — 날짜 거르기는 화면이 한다
+    camping: camping.map((c) => {
+      const o = {};
+      for (const [a, v] of Object.entries(c)) {
+        if (v === "" || v === null || v === undefined) continue;
+        o[a] = v;
+      }
+      return o;
+    }),
   };
 
   fs.writeFileSync(path.join(__dirname, "data.json"), JSON.stringify(data), "utf8");
@@ -1263,6 +1321,7 @@ const MANUAL = [];
   console.log(`  예약 프로그램 ${items.filter(i => i.kind === "reserve").length}`);
   console.log(`  상시 시설 ${items.filter(i => i.kind === "place").length}`);
   console.log(`  키즈카페 탭 ${data.kidscafe.length}곳`);
+  console.log(`  난지캠핑장 ${data.camping.length}구역`);
   console.log(`  (자료원별 중복 제거 전) 서울 ${seoul.length} / 표준데이터 ${std.length} / TourAPI ${tour.length} / 표준데이터 추가 ${std2.length} / 경기 시군 ${sigun.length}`);
   console.log(`  경기도 ${items.filter(i => String(i.area || "").startsWith("경기")).length}`);
 })();
