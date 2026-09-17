@@ -4,7 +4,7 @@
 
 export const CONFIG = {
   // 첫 화면 제목
-  title: '어울림 한마당',
+  title: '즐거운 QR게임',
 
   // 도장 몇 개를 모아야 상품을 받는지
   needStamps: 3,
