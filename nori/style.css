@@ -81,6 +81,20 @@ body {
   word-break: keep-all;
 }
 
+#game .lead {
+  font-size: 25px;
+}
+
+/* 순서 기억하기·짝 맞추기: 단계마다 안내 문장 줄 수가 달라져도(1줄/2줄) 격자 위치가 안 튀도록
+   두 줄 높이를 미리 확보한다 (25px 기준 실측 80px) */
+#game .lead:has(+ .memory-grid),
+#game .lead:has(+ .match-grid) {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .step {
   text-align: center;
   font-size: 18px;
