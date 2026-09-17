@@ -5,6 +5,9 @@
 // ===========================================================
 import { PACE, wait, enter, toTop } from './pace.js';
 
+// 한 판에 풀 문제 수. 문제가 이보다 적으면 있는 만큼만 쓴다.
+const PICK_COUNT = 3;
+
 // options: { lead, questions, grid }
 // questions 하나는 { question, choices, answer, explain } 형태다.
 // explain은 선택이고, 정답 공개 뒤 한 줄 더 보여준다.
@@ -13,29 +16,31 @@ import { PACE, wait, enter, toTop } from './pace.js';
 export function mountChoice(host, done, { lead, questions, grid = false } = {}) {
   let idx = 0;
   let correctCount = 0;
+  // 시작할 때 한 번만 섞어서 앞 PICK_COUNT개만 쓴다. 보기 순서는 섞지 않는다(answer가 보기 순서를 가리키므로).
+  const pool = questions.length <= PICK_COUNT ? questions : shuffle(questions).slice(0, PICK_COUNT);
 
   render();
 
   function render() {
     toTop();
-    if (idx >= questions.length) {
+    if (idx >= pool.length) {
       host.innerHTML = `
         <p class="lead">문제를 다 풀었습니다</p>
-        <p class="question">${questions.length}문제 중 ${correctCount}문제를 맞히셨습니다</p>
+        <p class="question">${pool.length}문제 중 ${correctCount}문제를 맞히셨습니다</p>
         <button class="big-btn primary" id="finish">도장 받기</button>`;
       enter(host);
       host.querySelector('#finish').onclick = done;
       return;
     }
 
-    const q = questions[idx];
+    const q = pool[idx];
     const withPics = q.choices.some((c) => typeof c === 'object' && c.pic);
     const picsHtml = q.pics
       ? `<div class="q-pics${q.pics.length === 1 ? ' one' : ''}">${q.pics.map((p) => `<img src="pics/${p}.svg" alt="">`).join('')}</div>`
       : '';
     host.innerHTML = `
       ${lead ? `<p class="lead">${lead}</p>` : ''}
-      <p class="step">${idx + 1}번째 / ${questions.length}문제</p>
+      <p class="step">${idx + 1}번째 / ${pool.length}문제</p>
       ${picsHtml}
       <p class="question">${q.question}</p>
       <div id="choices" class="${grid || withPics ? 'choice-grid' : ''}">
@@ -53,7 +58,7 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
   // 팝업은 화면 가운데, 바탕이 옅게 어두워져 뒤의 보기 표시(picked·correct)가
   // 비쳐 보이고, [다음 문제]를 눌러야만 닫힌다.
   async function pick(i) {
-    const q = questions[idx];
+    const q = pool[idx];
     const choicesWrap = host.querySelector('#choices');
     choicesWrap.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     choicesWrap.children[i].classList.add('picked');
@@ -89,6 +94,16 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
       render();
     };
   }
+}
+
+// 배열을 섞은 새 배열을 돌려준다(원본은 그대로 둠).
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 // 보기 하나의 글자. 글자만 있으면 그대로, { text, pic } 이면 text.

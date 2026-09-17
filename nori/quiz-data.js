@@ -43,4 +43,10 @@ export const QUESTIONS = [
     choices: ['떡국', '송편', '팥죽'],
     answer: 0,
   },
+  { question: '정월 대보름에\n깨물어 먹는 것은?', choices: ['엿', '부럼', '떡'], answer: 1 },
+  { question: '추석에 빚어 먹는\n떡은?', choices: ['인절미', '시루떡', '송편'], answer: 2 },
+  { question: '줄을 감아 던져서\n돌리던 놀잇감은?', choices: ['팽이', '딱지', '구슬'], answer: 0 },
+  { question: '동짓날에\n먹는 음식은?', choices: ['냉면', '팥죽', '떡국'], answer: 1 },
+  { question: '옛날 다듬이질에\n쓰던 도구는?', choices: ['절구', '호미', '방망이'], answer: 2 },
+  { question: '태극기 가운데 원의\n두 가지 색은?', choices: ['노랑과 초록', '빨강과 파랑', '검정과 하양'], answer: 1 },
 ];
