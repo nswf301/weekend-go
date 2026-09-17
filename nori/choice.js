@@ -48,20 +48,34 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
     });
   }
 
-  // 정답 공개는 화면 가운데 팝업으로 한다. 바탕이 옅게 어두워져 뒤의 보기
-  // 표시(picked·correct)가 비쳐 보이고, [다음 문제]를 눌러야만 닫힌다.
+  // 답을 고르면 고른 보기 표시만 남긴 채 뜸을 들이고, 그 뒤에 결과를 담은
+  // 팝업이 한 번에 뜬다(문구만 먼저 보여주는 "정답은…" 단계는 없앴다).
+  // 팝업은 화면 가운데, 바탕이 옅게 어두워져 뒤의 보기 표시(picked·correct)가
+  // 비쳐 보이고, [다음 문제]를 눌러야만 닫힌다.
   async function pick(i) {
     const q = questions[idx];
     const choicesWrap = host.querySelector('#choices');
     choicesWrap.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     choicesWrap.children[i].classList.add('picked');
 
+    await wait(PACE.suspense);
+
+    choicesWrap.children[q.answer].classList.add('correct');
+    const explainHtml = q.explain ? `<br>${q.explain}` : '';
+    let wordHtml;
+    if (i === q.answer) {
+      correctCount += 1;
+      wordHtml = `<span class="badge ok">정답입니다</span>${explainHtml}`;
+    } else {
+      wordHtml = `<span class="badge no">아쉬워요</span> 정답은 "${choiceText(q.choices[q.answer])}" 입니다${explainHtml}`;
+    }
+
     const popup = document.createElement('div');
     popup.className = 'popup-overlay';
     popup.innerHTML = `
       <div class="card popup-card" role="dialog" aria-modal="true">
-        <div class="popup-feedback"><p class="feedback" id="word">정답은…</p></div>
-        <div id="buttons"></div>
+        <div class="popup-feedback"><p class="feedback" id="word">${wordHtml}</p></div>
+        <div id="buttons"><button class="big-btn primary" id="next">다음 문제</button></div>
       </div>`;
     // host(#game)의 조상인 .card에는 화면 전환 때 .enter 애니메이션이 걸린다.
     // 예전엔 여기 transform(translateY)이 있어서 끝난 뒤에도 값이 남아
@@ -69,23 +83,7 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
     // 지금은 opacity만 쓰지만, 안전하게 계속 body에 직접 붙인다.
     document.body.appendChild(popup);
     enter(popup);
-
-    await wait(PACE.suspense);
-
-    choicesWrap.children[q.answer].classList.add('correct');
-    const explainHtml = q.explain ? `<br>${q.explain}` : '';
-    const wordEl = popup.querySelector('#word');
-    if (i === q.answer) {
-      correctCount += 1;
-      wordEl.innerHTML = `<span class="badge ok">정답입니다</span>${explainHtml}`;
-    } else {
-      wordEl.innerHTML = `<span class="badge no">아쉬워요</span> 정답은 "${choiceText(q.choices[q.answer])}" 입니다${explainHtml}`;
-    }
-
-    const buttonsEl = popup.querySelector('#buttons');
-    buttonsEl.innerHTML = '<button class="big-btn primary" id="next">다음 문제</button>';
-    enter(buttonsEl);
-    buttonsEl.querySelector('#next').onclick = () => {
+    popup.querySelector('#next').onclick = () => {
       popup.remove();
       idx += 1;
       render();

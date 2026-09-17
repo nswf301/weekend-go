@@ -3,12 +3,15 @@
 //  카드 6장(3쌍)을 뒤집어 같은 낱말끼리 짝을 찾는다.
 //  시간 제한도 실패도 없다. 언제든 포기하고 도장을 받을 수 있다.
 //
+//  시작하면 카드 6장을 모두 앞면으로 3초 보여준 뒤 한꺼번에 덮고 시작한다
+//  (미리 보는 동안은 눌리지 않는다).
+//
 //  판은 처음 한 번만 그린다. 이후엔 카드 하나하나의 class만
 //  바꿔서 뒤집기 효과가 그 카드에서만 재생되게 한다.
 //  앞면(그림+글자)은 처음부터 넣어 두고, 덮인 동안은 CSS로 감춘다
 //  (뒤집는 순간 그림을 새로 불러오느라 늦게 뜨지 않게).
 // ===========================================================
-import { PACE, enter, keepInView } from '../pace.js';
+import { PACE, wait, enter, keepInView } from '../pace.js';
 
 const WORDS = [
   { word: '달', pic: 'moon' },
@@ -21,16 +24,18 @@ const faceHtml = (c) => `<img class="cell-pic" src="pics/${c.pic}.svg" alt=""><s
 
 export function mount(host, done) {
   const deck = shuffle([...WORDS, ...WORDS].map((w, i) => ({ ...w, id: i })));
-  const state = deck.map((c) => ({ ...c, faceUp: false, matched: false }));
+  // 미리 보여줄 동안은 앞면 상태로 시작한다
+  const state = deck.map((c) => ({ ...c, faceUp: true, matched: false }));
   let flipped = [];
-  let locked = false;
+  let locked = true; // 미리 보는 동안은 못 누르게 막는다
   let matchedCount = 0;
 
   renderBoard();
+  runPreview();
 
   function renderBoard() {
     host.innerHTML = `
-      <p class="lead">같은 낱말 카드 두 장을 찾아보세요</p>
+      <p class="lead" id="lead">카드를 잘 보세요</p>
       <div class="match-grid" id="grid">
         ${state.map((c, i) => cardHtml(c, i)).join('')}
       </div>
@@ -44,6 +49,25 @@ export function mount(host, done) {
       btn.onclick = () => pick(Number(btn.dataset.i));
     });
     host.querySelector('#giveup').onclick = done;
+  }
+
+  // 화면 등장(fadeIn)이 끝난 뒤부터 matchPreview만큼 앞면을 보여주고,
+  // 기존 flipCard 효과로 카드를 한꺼번에 덮은 뒤 잠금을 푼다.
+  async function runPreview() {
+    await wait(PACE.fadeIn);
+    await wait(PACE.matchPreview);
+    if (!host.isConnected) return; // 그사이 화면을 떠났으면 그만둔다
+
+    state.forEach((c, i) => {
+      c.faceUp = false;
+      flipCard(i);
+    });
+    const leadEl = host.querySelector('#lead');
+    if (leadEl) leadEl.textContent = '같은 낱말 카드 두 장을 찾아보세요';
+
+    await wait(PACE.cardFlip);
+    if (!host.isConnected) return;
+    locked = false;
   }
 
   function cardHtml(c, i) {
