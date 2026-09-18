@@ -112,7 +112,7 @@ export function mount(host, done) {
 
     if (correct) {
       // [도장 받기]는 틀렸을 때와 같은 아래 칸에 둔다(위 칸은 빈 자리로 남긴다)
-      wordEl.innerHTML = '<span class="badge ok">정답입니다</span> 순서를 모두 기억하셨습니다';
+      wordEl.innerHTML = '<span class="badge ok">정답</span> 순서를 모두 기억하셨습니다';
       slot2.textContent = '도장 받기';
       slot2.onclick = close(done);
       slot2.classList.replace('ghost', 'primary');

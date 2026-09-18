@@ -41,7 +41,7 @@ async function loadData() {
 
 function render(data) {
   app.innerHTML = `
-    <p class="title small">즐거운 QR게임 관리</p>
+    <p class="title small">스마트 퀴즈존 관리</p>
     <div class="admin-top">
       <button class="big-btn ghost" id="refresh">새로고침</button>
       <a class="big-btn ghost" href="../print/" target="_blank" rel="noopener">QR 인쇄판</a>

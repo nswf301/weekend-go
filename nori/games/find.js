@@ -93,7 +93,7 @@ export function mount(host, done) {
     popup.className = 'popup-overlay';
     popup.innerHTML = `
       <div class="card popup-card" role="dialog" aria-modal="true">
-        <div class="popup-feedback"><p class="feedback"><span class="badge ok">잘하셨습니다</span> ${text}</p></div>
+        <div class="popup-feedback"><p class="feedback"><span class="badge ok">성공</span> ${text}</p></div>
         <div id="buttons">
           <button class="big-btn primary" id="next">${label}</button>
         </div>

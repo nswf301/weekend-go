@@ -70,7 +70,7 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
     let wordHtml;
     if (i === q.answer) {
       correctCount += 1;
-      wordHtml = `<span class="badge ok">정답입니다</span>${explainHtml}`;
+      wordHtml = `<span class="badge ok">정답</span>${q.explain || ''}`;
     } else {
       wordHtml = `<span class="badge no">아쉬워요</span> 정답은 "${choiceText(q.choices[q.answer])}" 입니다${explainHtml}`;
     }

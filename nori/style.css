@@ -175,13 +175,13 @@ body {
   z-index: 50;
 }
 
-/* 13문제(quiz 4·proverb 3·market 3·odd 3) 결과 상태(버튼 포함) 자연 높이를
-   360x640에서 실측한 최대값(329.5625px, 다른 하나 찾기 3번을 오답으로 골랐을
-   때)을 올린 값이다. 문제마다 카드 크기가 들쭉날쭉하지 않게 고정한다. */
+/* 배지 줄바꿈(2026-09-18) 뒤 40문제·숫자 누르기 결과 상태(버튼 포함) 자연 높이를
+   360x640에서 실측한 최대값(339.6px, 다른 하나 찾기 오답·숫자 누르기 1판
+   끝)을 올린 값이다. 문제마다 카드 크기가 들쭉날쭉하지 않게 고정한다. */
 .popup-card {
   width: 100%;
   max-width: 420px;
-  min-height: 330px;
+  min-height: 340px;
   display: flex;
   flex-direction: column;
 }
@@ -211,19 +211,21 @@ body {
 }
 
 /* 순서 기억하기 팝업은 버튼 두 칸을 늘 잡아 두므로 문구 칸이 좁다.
-   가장 큰 결과(360px 폭 실측: 틀림 342px, 맞음 343px — 아래 칸이 코랄 버튼이라 6px 높다)에
+   가장 큰 결과(배지 줄바꿈 뒤 360px 폭 실측: 틀림 387.4px — 순서 이름이 세 줄로 감긴다)에
    맞춰 "맞았을까요…"부터 같은 크기로 둔다 */
 .popup-card.memory-popup {
-  min-height: 344px;
+  min-height: 388px;
 }
 
+/* 배지는 한 줄을 따로 차지하고, 설명문은 그 아래 줄에서 시작한다 */
 .badge {
-  display: inline-block;
+  display: block;
+  width: fit-content;
+  margin: 0 auto 10px;
   padding: 4px 14px;
   border-radius: 999px;
   font-size: 20px;
   font-weight: 700;
-  margin-right: 8px;
 }
 
 .badge.ok { background: var(--ok-bg); color: var(--ok); }

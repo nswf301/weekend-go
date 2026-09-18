@@ -80,7 +80,7 @@ export function mount(host, done) {
     const nextIsTimed = !last && round === ROUNDS - 1;
     const text = last
       ? '두 판을 모두 마치셨습니다'
-      : `${round}판째를 모두 누르셨습니다${nextIsTimed ? '. 다음 판은 시간 안에 눌러 주세요' : ''}`;
+      : `${round}판째를 모두 누르셨습니다${nextIsTimed ? '. 다음 판은 10초 안에 눌러 주세요' : ''}`;
     showResult(
       text,
       last ? '도장 받기' : '다음 판',
@@ -110,7 +110,7 @@ export function mount(host, done) {
     popup.className = 'popup-overlay';
     popup.innerHTML = `
       <div class="card popup-card" role="dialog" aria-modal="true">
-        <div class="popup-feedback"><p class="feedback"><span class="badge ok">잘하셨습니다</span> ${text}</p></div>
+        <div class="popup-feedback"><p class="feedback"><span class="badge ok">성공</span> ${text}</p></div>
         <div id="buttons">
           <button class="big-btn primary" id="next">${label}</button>
         </div>

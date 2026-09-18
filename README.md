@@ -20,7 +20,7 @@
 | 앱 | 폴더 | 주소 | 문서 |
 |---|---|---|---|
 | 주말 어디 가지 | 루트 | https://nswf301.github.io/weekend-go/ | 이 파일 |
-| 즐거운 QR게임 (nori) | `nori/` | https://nswf301.github.io/weekend-go/nori/ | [nori/README.md](nori/README.md) |
+| 스마트 퀴즈존 (nori, 옛 즐거운 QR게임) | `nori/` | https://nswf301.github.io/weekend-go/nori/ | [nori/README.md](nori/README.md) |
 
 - QR게임은 **주말 앱과 상관없는 별개 앱**이다(어르신 행사에서 부스 도장을 모으는 앱). GitHub Pages가 저장소 전체를 띄워서 폴더만 넣으면 주소가 생기므로 여기 얹었다.
 - QR게임은 **Firestore를 쓴다.** 루트의 `firestore.rules` 와 `firebase.json` 의 `firestore` 항목이 그것 때문에 있다.
@@ -64,7 +64,7 @@ keys.json           인증키 (.gitignore에 있음, 절대 커밋 금지)
 keys.example.json   키 넣는 자리 견본
 firebase.json       함수·QR게임 Firestore 설정 (.firebaserc 의 프로젝트 weekend-go-1)
 firestore.rules     QR게임이 쓰는 Firestore 규칙
-nori/               즐거운 QR게임 (별개 앱)
+nori/               스마트 퀴즈존(옛 QR게임, 별개 앱)
 docs/               참고 문서
 ```
 
