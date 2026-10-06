@@ -61,11 +61,17 @@
 
     /* ---------- 부스 한 장 ---------- */
     .sheet {
+      --c1: #0f766e;
+      --c2: #2563eb;
+      --ink: #0f172a;
+      --sub: #475569;
+      position: relative;
+      overflow: hidden;
       width: 210mm;
       min-height: 297mm;
       margin: 0 auto 24px;
-      padding: 34mm 28mm 0;
-      background: #fff url(img/frame.jpg) center / 100% 100% no-repeat;
+      padding: 16mm 24mm 0;
+      background: #fff;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       border: 1px solid var(--line);
@@ -76,23 +82,66 @@
       text-align: center;
     }
 
+    .sheet > * { position: relative; }
+
+    /* 위쪽 색 띠 */
+    .sheet > .sheet-band {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 78mm;
+      background:
+        radial-gradient(circle at 88% 18%, rgba(255,255,255,.16) 0 22mm, transparent 22.2mm),
+        radial-gradient(circle at 6% 96%, rgba(255,255,255,.10) 0 30mm, transparent 30.2mm),
+        linear-gradient(120deg, var(--c1), var(--c2));
+      border-radius: 0 0 16mm 16mm;
+    }
+
+    /* 맨 아래 얇은 띠 */
+    .sheet > .sheet-foot {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 6mm;
+      background: linear-gradient(120deg, var(--c1), var(--c2));
+    }
+
     .sheet-event {
       font-size: 26px;
-      color: var(--muted);
-      margin: 0 0 6px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #fff;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 999px;
+      padding: 6px 26px;
+      margin: 0 0 8mm;
     }
 
     .sheet-title {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3mm;
-      margin: 0 0 8px;
+      gap: 5mm;
+      margin: 0 0 7mm;
+    }
+
+    .sheet-pic-card {
+      width: 66mm;
+      height: 50mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 8mm;
+      box-shadow: 0 3mm 8mm rgba(15,23,42,.18);
     }
 
     .sheet-pic {
-      height: 38mm;
-      max-width: 80mm;
+      max-height: 40mm;
+      max-width: 56mm;
       object-fit: contain;
       mix-blend-mode: multiply;
     }
@@ -102,14 +151,25 @@
       font-weight: 800;
       margin: 0;
       letter-spacing: -1px;
+      color: var(--ink);
     }
 
+    /* QR — 네 귀퉁이에 스캔 틀 */
     .sheet-qr {
-      margin: 0 0 12px;
-      padding: 5mm;
-      background: #fff;
-      border-radius: 6mm;
-      box-shadow: 0 0 0 1.2mm #fbe3d6;
+      --k: var(--c2);
+      margin: 0 0 6mm;
+      padding: 7mm;
+      background:
+        linear-gradient(var(--k), var(--k)) left top / 14mm 1.8mm,
+        linear-gradient(var(--k), var(--k)) left top / 1.8mm 14mm,
+        linear-gradient(var(--k), var(--k)) right top / 14mm 1.8mm,
+        linear-gradient(var(--k), var(--k)) right top / 1.8mm 14mm,
+        linear-gradient(var(--k), var(--k)) left bottom / 14mm 1.8mm,
+        linear-gradient(var(--k), var(--k)) left bottom / 1.8mm 14mm,
+        linear-gradient(var(--k), var(--k)) right bottom / 14mm 1.8mm,
+        linear-gradient(var(--k), var(--k)) right bottom / 1.8mm 14mm,
+        #fff;
+      background-repeat: no-repeat;
     }
 
     .sheet-qr img,
@@ -124,28 +184,28 @@
     .sheet-guide {
       font-size: 30px;
       font-weight: 700;
-      margin: 0 0 26px;
+      color: var(--ink);
+      margin: 0 0 7mm;
     }
 
     .sheet-pin {
-      border: 4px dashed var(--point);
-      border-radius: 18px;
-      padding: 10px 40px;
-      background: #fff;
+      background: #eef4ff;
+      border-radius: 6mm;
+      padding: 12px 48px;
     }
 
     .sheet-pin-label {
       font-size: 22px;
-      color: var(--muted);
-      margin: 0 0 4px;
+      color: var(--sub);
+      margin: 0 0 2px;
     }
 
     .sheet-pin-value {
-      font-size: 68px;
+      font-size: 64px;
       font-weight: 800;
       letter-spacing: 10px;
       margin: 0;
-      color: var(--point);
+      color: var(--c2);
     }
 
     /* ---------- 인쇄 ---------- */

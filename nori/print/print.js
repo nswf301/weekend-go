@@ -32,9 +32,10 @@ async function render() {
 
   root.innerHTML = BOOTHS.map((b) => `
     <section class="sheet">
+      <div class="sheet-band"></div>
       <p class="sheet-event">${CONFIG.title}</p>
       <div class="sheet-title">
-        <img class="sheet-pic" src="img/${b.pic}.jpg" alt="">
+        <div class="sheet-pic-card"><img class="sheet-pic" src="img/${b.pic}.jpg" alt=""></div>
         <h1 class="sheet-name">${b.name}</h1>
       </div>
       <div class="sheet-qr" id="qr-${b.code}"></div>
@@ -43,6 +44,7 @@ async function render() {
         <p class="sheet-pin-label">카메라가 안 될 때 넣는 번호</p>
         <p class="sheet-pin-value">${b.pin}</p>
       </div>
+      <div class="sheet-foot"></div>
     </section>`).join('');
 
   for (const b of BOOTHS) {
