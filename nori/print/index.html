@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>부스 QR 인쇄</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/static/woff2/SUIT.css">
   <style>
     :root {
       --text: #2b2320;
@@ -18,7 +19,7 @@
       margin: 0;
       background: #f4efe9;
       color: var(--text);
-      font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+      font-family: 'SUIT', -apple-system, 'Malgun Gothic', sans-serif;
       font-size: 16px;
     }
 
@@ -63,8 +64,10 @@
       width: 210mm;
       min-height: 297mm;
       margin: 0 auto 24px;
-      padding: 24mm 18mm;
-      background: #fff;
+      padding: 34mm 28mm 0;
+      background: #fff url(img/frame.jpg) center / 100% 100% no-repeat;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
       border: 1px solid var(--line);
       display: flex;
       flex-direction: column;
@@ -79,19 +82,40 @@
       margin: 0 0 6px;
     }
 
+    .sheet-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3mm;
+      margin: 0 0 8px;
+    }
+
+    .sheet-pic {
+      height: 38mm;
+      max-width: 80mm;
+      object-fit: contain;
+      mix-blend-mode: multiply;
+    }
+
     .sheet-name {
       font-size: 62px;
       font-weight: 800;
-      margin: 0 0 18px;
+      margin: 0;
       letter-spacing: -1px;
     }
 
-    .sheet-qr { margin: 0 0 14px; }
+    .sheet-qr {
+      margin: 0 0 12px;
+      padding: 5mm;
+      background: #fff;
+      border-radius: 6mm;
+      box-shadow: 0 0 0 1.2mm #fbe3d6;
+    }
 
     .sheet-qr img,
     .sheet-qr canvas {
-      width: 128mm !important;
-      height: 128mm !important;
+      width: 88mm !important;
+      height: 88mm !important;
       display: block;
     }
 
@@ -106,7 +130,8 @@
     .sheet-pin {
       border: 4px dashed var(--point);
       border-radius: 18px;
-      padding: 16px 40px;
+      padding: 10px 40px;
+      background: #fff;
     }
 
     .sheet-pin-label {

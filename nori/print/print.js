@@ -33,7 +33,10 @@ async function render() {
   root.innerHTML = BOOTHS.map((b) => `
     <section class="sheet">
       <p class="sheet-event">${CONFIG.title}</p>
-      <h1 class="sheet-name">${b.name}</h1>
+      <div class="sheet-title">
+        <img class="sheet-pic" src="img/${b.pic}.jpg" alt="">
+        <h1 class="sheet-name">${b.name}</h1>
+      </div>
       <div class="sheet-qr" id="qr-${b.code}"></div>
       <p class="sheet-guide">휴대전화로 이 그림을 비춰 주세요</p>
       <div class="sheet-pin">
