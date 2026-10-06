@@ -6,20 +6,26 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // 참여 번호를 세는 숫자 하나. 마지막 번호가 곧 참여 인원수다.
-    // 누구나 읽을 수 있고, 쓰기는 "정확히 1 늘리기"만 허용한다.
+    // 누구나 읽을 수 있고, 쓰기는 두 가지만 허용한다.
+    //  - 번호 발급: count 를 정확히 1 늘리고 round(회차)는 그대로
+    //  - 참여 초기화(관리 화면): count 를 0으로, round 를 1 올림
     match /nori/counter {
       allow get: if true;
-      allow create: if request.resource.data.keys().hasOnly(['count'])
-                    && request.resource.data.count == 1;
-      allow update: if request.resource.data.keys().hasOnly(['count'])
+      allow create: if request.resource.data.keys().hasOnly(['count', 'round'])
+                    && request.resource.data.count == 1
+                    && request.resource.data.get('round', 0) == 0;
+      allow update: if request.resource.data.keys().hasOnly(['count', 'round'])
                     && request.resource.data.count is int
-                    && request.resource.data.count == resource.data.count + 1;
+                    && ((request.resource.data.count == resource.data.count + 1
+                         && request.resource.data.get('round', 0) == resource.data.get('round', 0))
+                     || (request.resource.data.count == 0
+                         && request.resource.data.round == resource.data.get('round', 0) + 1));
       allow delete: if false;
     }
 
     // 참여자별 도장. 문서 id 가 참여 번호이고 이름 같은 개인정보는 담지 않는다.
     // 관리 화면이 전체를 훑어야 하므로 list 도 열어 둔다.
-    // 도장은 지울 수 없고, 부스 수(7개)보다 많이 담을 수도 없다.
+    // 도장은 줄일 수 없고(지우기는 초기화로만), 7개보다 많이 담을 수도 없다.
     match /players/{playerId} {
       allow get, list: if true;
       allow create: if request.resource.data.keys().hasOnly(['stamps', 'updatedAt'])
@@ -29,7 +35,8 @@ service cloud.firestore {
                     && request.resource.data.stamps is map
                     && request.resource.data.stamps.size() <= 7
                     && request.resource.data.stamps.size() >= resource.data.stamps.size();
-      allow delete: if false;
+      // 관리 화면의 참여 초기화가 지운다(잠금 없음 — 사용자가 정함, 2026-10-06).
+      allow delete: if true;
     }
 
     // 그 밖의 모든 곳은 막는다.

@@ -21,31 +21,54 @@ const firebaseConfig = {
 export const db = getFirestore(initializeApp(firebaseConfig));
 
 const NUMBER_KEY = 'nori_player_number';
+const ROUND_KEY = 'nori_round';
 
-// 이 폰이 기억하고 있는 참여 번호
-export function savedNumber() {
-  return localStorage.getItem(NUMBER_KEY);
+// 지금 회차. 관리 화면에서 참여 초기화를 누를 때마다 1씩 오른다.
+async function currentRound() {
+  const snap = await getDoc(doc(db, 'nori', 'counter'));
+  return snap.exists() ? Number(snap.data().round) || 0 : 0;
 }
 
-function remember(num) {
-  try { localStorage.setItem(NUMBER_KEY, String(num)); } catch (e) { /* 저장이 막혀도 진행은 된다 */ }
+// 이 폰이 기억하고 있는 참여 번호.
+// 초기화 전 회차의 번호면 잊는다(새 참여자와 번호가 겹치지 않게).
+export async function savedNumber() {
+  const num = localStorage.getItem(NUMBER_KEY);
+  if (!num) return null;
+  let round;
+  try { round = await currentRound(); } catch (e) { return num; }
+  if ((Number(localStorage.getItem(ROUND_KEY)) || 0) !== round) {
+    forgetNumber();
+    return null;
+  }
+  return num;
+}
+
+function remember(num, round) {
+  try {
+    localStorage.setItem(NUMBER_KEY, String(num));
+    localStorage.setItem(ROUND_KEY, String(round));
+  } catch (e) { /* 저장이 막혀도 진행은 된다 */ }
 }
 
 export function forgetNumber() {
-  try { localStorage.removeItem(NUMBER_KEY); } catch (e) { /* 무시 */ }
+  try {
+    localStorage.removeItem(NUMBER_KEY);
+    localStorage.removeItem(ROUND_KEY);
+  } catch (e) { /* 무시 */ }
 }
 
 // 새 참여 번호를 받는다.
 // 여러 명이 같은 순간에 눌러도 번호가 겹치지 않는다.
 export async function issueNumber() {
   const ref = doc(db, 'nori', 'counter');
-  const num = await runTransaction(db, async (tx) => {
+  const { num, round } = await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     const next = (snap.exists() ? Number(snap.data().count) || 0 : 0) + 1;
-    tx.set(ref, { count: next });
-    return next;
+    const r = snap.exists() ? Number(snap.data().round) || 0 : 0;
+    tx.set(ref, { count: next, round: r });
+    return { num: next, round: r };
   });
-  remember(num);
+  remember(num, round);
   return String(num);
 }
 
@@ -62,7 +85,7 @@ export async function loadStamps(num) {
 export async function resumeNumber(num) {
   const stamps = await loadStamps(num);
   if (stamps === null) return null;
-  remember(num);
+  remember(num, await currentRound());
   return stamps;
 }
 

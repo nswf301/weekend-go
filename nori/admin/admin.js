@@ -5,7 +5,9 @@
 // ===========================================================
 import { db } from '../player.js';
 import { CONFIG, BOOTHS } from '../config.js';
-import { collection, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
+import {
+  collection, getDocs, doc, getDoc, setDoc, writeBatch,
+} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 
 const app = document.getElementById('app');
 
@@ -77,9 +79,16 @@ function render(data) {
         <button class="big-btn primary" id="searchBtn">찾기</button>
       </div>
       <div id="searchResult"></div>
+    </div>
+
+    <div class="card admin-card">
+      <p class="step">참여 초기화</p>
+      <p class="admin-note">시험해 본 기록을 모두 지웁니다. 번호는 1번부터 다시 시작하고, 도장도 전부 사라집니다. 행사 중에는 누르지 마세요.</p>
+      <button class="big-btn ghost" id="resetBtn">참여 초기화</button>
     </div>`;
 
   app.querySelector('#refresh').onclick = init;
+  app.querySelector('#resetBtn').onclick = resetAll;
 
   const input = app.querySelector('#numInput');
   const resultEl = app.querySelector('#searchResult');
@@ -100,6 +109,30 @@ function render(data) {
 
   app.querySelector('#searchBtn').onclick = doSearch;
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+}
+
+// 참여 기록을 전부 지운다.
+// 회차를 먼저 올려서, 옛 번호를 기억하는 폰이 새 참여자와 번호가 겹치지 않게 한다.
+async function resetAll() {
+  if (!confirm('참여 기록을 모두 지웁니다.\n번호는 1번부터 다시 시작하고 도장도 전부 사라집니다.\n\n정말 지울까요?')) return;
+  app.innerHTML = '<p class="lead">지우는 중입니다</p>';
+  try {
+    const ref = doc(db, 'nori', 'counter');
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await setDoc(ref, { count: 0, round: (Number(snap.data().round) || 0) + 1 });
+    }
+    const players = await getDocs(collection(db, 'players'));
+    for (let i = 0; i < players.docs.length; i += 400) {
+      const batch = writeBatch(db);
+      players.docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+    alert('초기화했습니다.');
+  } catch (e) {
+    alert(`초기화하지 못했습니다.\n${e.message}`);
+  }
+  init();
 }
 
 async function init() {

@@ -43,7 +43,7 @@ async function boot() {
   // 관리 페이지에서 온 미리보기 - 번호도 도장도 없이 놀이만 열어 본다
   if (state.preview && state.booth) return startGame(state.booth);
 
-  const saved = savedNumber();
+  const saved = await savedNumber();
   if (!saved) return state.booth ? showBoothIntro() : showWelcome();
 
   state.number = saved;
