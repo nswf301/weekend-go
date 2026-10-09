@@ -120,7 +120,7 @@ export function mount(host, done) {
     } else {
       const orderNames = order.map((i) => CELLS[i].name).join(' → ');
       wordEl.innerHTML = `<span class="badge no">아쉬워요</span> 켜진 순서는 "${orderNames}" 이었습니다`;
-      slot1.textContent = '한 번 더 해보기';
+      slot1.textContent = '다시 해보기';
       slot1.onclick = close(runRound);
       slot2.textContent = '도장 받기';
       slot2.onclick = close(done);

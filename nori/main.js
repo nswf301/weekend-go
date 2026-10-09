@@ -121,7 +121,7 @@ function showBoothIntro() {
         ${booth.pic ? `<img class="booth-pic" src="pics/${esc(booth.pic)}.svg" alt="">` : ''}
         <p class="lead">이 놀이는 이미 하셨습니다</p>
         ${progressHtml()}
-        <button class="big-btn primary" id="again">한 번 더 놀기</button>
+        <button class="big-btn primary" id="again">다시 해보기</button>
         ${nextButtonsHtml()}
       </div>`);
     document.getElementById('again').onclick = () => startGame(booth);
@@ -189,7 +189,7 @@ function showPreviewEnd(booth) {
       <h2 class="title small">${esc(booth.name)}</h2>
       <p class="lead">미리보기입니다
 도장은 찍히지 않았습니다</p>
-      <button class="big-btn primary" id="again">한 번 더 보기</button>
+      <button class="big-btn primary" id="again">다시 해보기</button>
     </div>`);
   document.getElementById('again').onclick = () => startGame(booth);
 }
@@ -216,7 +216,7 @@ function showStampBeforePrize(booth) {
     <div class="card">
       <h2 class="title small">도장을 받았습니다</h2>
       ${progressHtml(booth.code)}
-      <p class="lead">도장을 모두 모으셨습니다</p>
+      <p class="lead">도장을 모두 모았습니다</p>
       <button class="big-btn primary" id="toPrize">상품 암호 보기</button>
     </div>`, PACE.fadeIn + PACE.stamp);
   document.getElementById('toPrize').onclick = showPrize;
@@ -239,7 +239,7 @@ function showProgress() {
 function showPrize() {
   show(`
     <div class="card">
-      <h1 class="title">다 모으셨습니다</h1>
+      <h1 class="title">도장을 모두 모았습니다</h1>
       <div class="password-box">
         <p class="password-label">상품 암호</p>
         <p class="password-text">${esc(CONFIG.password)}</p>

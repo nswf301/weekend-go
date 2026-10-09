@@ -25,15 +25,15 @@ service cloud.firestore {
 
     // 참여자별 도장. 문서 id 가 참여 번호이고 이름 같은 개인정보는 담지 않는다.
     // 관리 화면이 전체를 훑어야 하므로 list 도 열어 둔다.
-    // 도장은 줄일 수 없고(지우기는 초기화로만), 7개보다 많이 담을 수도 없다.
+    // 도장은 줄일 수 없고(지우기는 초기화로만), 부스 수(8개)보다 많이 담을 수도 없다. 부스를 늘리면 이 숫자도 같이 늘린다.
     match /players/{playerId} {
       allow get, list: if true;
       allow create: if request.resource.data.keys().hasOnly(['stamps', 'updatedAt'])
                     && request.resource.data.stamps is map
-                    && request.resource.data.stamps.size() <= 7;
+                    && request.resource.data.stamps.size() <= 8;
       allow update: if request.resource.data.keys().hasOnly(['stamps', 'updatedAt'])
                     && request.resource.data.stamps is map
-                    && request.resource.data.stamps.size() <= 7
+                    && request.resource.data.stamps.size() <= 8
                     && request.resource.data.stamps.size() >= resource.data.stamps.size();
       // 관리 화면의 참여 초기화가 지운다(잠금 없음 — 사용자가 정함, 2026-10-06).
       allow delete: if true;
