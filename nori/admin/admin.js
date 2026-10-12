@@ -116,8 +116,11 @@ function update() {
   BOOTHS.forEach((b) => {
     app.querySelector(`[data-booth="${b.code}"]`).textContent = boothCounts[b.code];
   });
-  const time = new Date().toLocaleTimeString('ko-KR', { hour12: false });
-  app.querySelector('#liveNote').textContent = `참여자가 생기면 자동으로 바뀝니다. 마지막 변경 ${time}`;
+  const time = new Date().toLocaleTimeString('ko-KR', {
+    hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  // 좁은 폰에서 시각이 두 줄로 쪼개지지 않게 묶는다.
+  app.querySelector('#liveNote').innerHTML = `참여자가 생기면 자동으로 바뀝니다. <span style="white-space: nowrap">마지막 변경 ${time}</span>`;
 }
 
 // 참여 기록을 전부 지운다.
