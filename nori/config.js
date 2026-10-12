@@ -7,7 +7,7 @@ export const CONFIG = {
   title: '스마트 퀴즈존',
 
   // 도장 몇 개를 모아야 상품을 받는지
-  needStamps: 3,
+  needStamps: 2,
 
   // 도장을 다 모으면 나오는 상품 암호
   password: '무궁화',

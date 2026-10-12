@@ -255,7 +255,7 @@ function showPrize() {
 // ---------------- 다음 부스로 ----------------
 function nextButtonsHtml() {
   return `
-    <button class="big-btn primary" id="scan">다음 놀이 찍기</button>
+    <button class="big-btn primary" id="scan">다음 QR 찍기</button>
     <button class="big-btn ghost" id="bypin">부스 번호 넣기</button>
     <p class="ticket small">참여 번호 <strong>${esc(state.number)}번</strong></p>`;
 }
