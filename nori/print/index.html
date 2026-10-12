@@ -67,6 +67,8 @@
       --sub: #475569;
       position: relative;
       overflow: hidden;
+      /* 안의 치수는 A4(210×297mm) 기준 그대로 두고 통째로 키워 A3(297×420mm)에 맞춘다 */
+      zoom: 1.414;
       width: 210mm;
       min-height: 297mm;
       margin: 0 auto 24px;
@@ -209,7 +211,7 @@
     }
 
     /* ---------- 인쇄 ---------- */
-    @page { size: A4; margin: 0; }
+    @page { size: A3; margin: 0; }
 
     @media print {
       body { background: #fff; }
@@ -227,7 +229,7 @@
 <body>
   <div class="top">
     <h1>부스 QR 인쇄판</h1>
-    <p>부스 하나가 A4 한 장입니다. 아래 버튼을 누르고 <b>용지 A4·여백 없음</b>으로 인쇄하세요.</p>
+    <p>부스 하나가 A3 한 장입니다. 아래 버튼을 누르고 <b>용지 A3·여백 없음</b>으로 인쇄하세요.</p>
     <p>QR이 가리키는 주소는 <code id="addr"></code> 입니다.</p>
     <p>부스 이름이나 네 자리 번호를 바꾸려면 <code>config.js</code>를 고친 뒤 이 화면을 다시 열면 됩니다.</p>
     <button class="print-btn" onclick="window.print()">인쇄하기</button>

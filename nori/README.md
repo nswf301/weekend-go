@@ -31,7 +31,7 @@ quiz-data.js    추억 퀴즈 문항
 games/          놀이 하나에 파일 하나 (proverb, market, number, quiz, memory, match, odd, find)
 pics/           그림 (색종이 오려붙이기 SVG, 한 파일에 그림 하나)
 admin/          관리 화면
-print/          부스 QR 인쇄판 (A4 한 장 = 부스 하나)
+print/          부스 QR 인쇄판 (A3 한 장 = 부스 하나)
 ```
 
 놀이를 고칠 땐 `games/` 안의 그 파일 하나만 열면 된다. 놀이를 더 붙이려면
