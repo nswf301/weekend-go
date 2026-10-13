@@ -71,7 +71,6 @@ function showWelcome() {
       ${where ? `<p class="lead">${where}</p>` : ''}
       <p class="lead">놀이 ${CONFIG.needStamps}가지를 하시면\n선물을 드립니다</p>
       <button class="big-btn primary" id="start">시작하기</button>
-      <button class="big-btn ghost" id="resume">번호를 이미 받으셨어요</button>
     </div>`);
 
   document.getElementById('start').onclick = async () => {
@@ -84,7 +83,6 @@ function showWelcome() {
       showError('번호를 받지 못했습니다', '직원에게 말씀해 주세요');
     }
   };
-  document.getElementById('resume').onclick = showResume;
 }
 
 // ---------------- 번호 이어받기 ----------------
@@ -135,7 +133,6 @@ function showBoothIntro() {
       ${booth.pic ? `<img class="booth-pic" src="pics/${esc(booth.pic)}.svg" alt="">` : ''}
       ${progressHtml()}
       <button class="big-btn primary" id="play">놀이 시작</button>
-      ${state.number ? '' : '<button class="big-btn ghost" id="resume">번호를 이미 받으셨어요</button>'}
     </div>`);
   document.getElementById('play').onclick = async () => {
     if (state.number) return startGame(booth);
@@ -148,9 +145,6 @@ function showBoothIntro() {
       showError('번호를 받지 못했습니다', '직원에게 말씀해 주세요');
     }
   };
-  if (!state.number) {
-    document.getElementById('resume').onclick = showResume;
-  }
 }
 
 // ---------------- 게임 ----------------
