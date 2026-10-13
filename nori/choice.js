@@ -8,6 +8,9 @@ import { PACE, wait, enter, toTop } from './pace.js';
 // 한 판에 풀 문제 수. 문제가 이보다 적으면 있는 만큼만 쓴다.
 const PICK_COUNT = 3;
 
+// 새 문제의 보기는 화면 두드림이 이만큼(ms) 멎은 뒤에야 눌린다. 아래 arm() 설명 참고.
+const QUIET = 1000;
+
 // options: { lead, questions, grid }
 // questions 하나는 { question, choices, answer, explain } 형태다.
 // explain은 선택이고, 정답 공개 뒤 한 줄 더 보여준다.
@@ -19,11 +22,26 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
   // 시작할 때 한 번만 섞어서 앞 PICK_COUNT개만 쓴다. 보기 순서는 섞지 않는다(answer가 보기 순서를 가리키므로).
   const pool = questions.length <= PICK_COUNT ? questions : shuffle(questions).slice(0, PICK_COUNT);
 
+  // [다음 문제] 버튼과 다음 문제의 첫 번째 보기가 화면의 같은 자리에 온다. 같은 곳을 계속 두드리면
+  // 문제를 읽기도 전에 보기가 골라져서, 한 문제만 풀고도 끝 화면까지 넘어갔다(2026-10-13 행사 당일 발견).
+  // 그래서 새 문제의 보기는 두드림이 QUIET 만큼 멎은 뒤에야 눌리게 한다. 한 번 풀리면 그 문제 동안은 그대로다.
+  let armed = false;
+  let armTimer = null;
+  const arm = () => {
+    armed = false;
+    clearTimeout(armTimer);
+    armTimer = setTimeout(() => { armed = true; }, QUIET);
+  };
+  const onTap = () => { if (!armed) arm(); };
+  document.addEventListener('pointerdown', onTap, true);
+
   render();
 
   function render() {
     toTop();
     if (idx >= pool.length) {
+      clearTimeout(armTimer);
+      document.removeEventListener('pointerdown', onTap, true);
       host.innerHTML = `
         <p class="lead">문제를 다 풀었습니다</p>
         <p class="question">${pool.length}문제 중 ${correctCount}문제를 맞히셨습니다</p>
@@ -47,9 +65,10 @@ export function mountChoice(host, done, { lead, questions, grid = false } = {}) 
         ${q.choices.map((c, i) => choiceHtml(c, i)).join('')}
       </div>`;
     enter(host);
+    arm();
 
     host.querySelectorAll('#choices button').forEach((btn) => {
-      btn.onclick = () => pick(Number(btn.dataset.i));
+      btn.onclick = () => { if (armed) pick(Number(btn.dataset.i)); };
     });
   }
 
